@@ -10,10 +10,10 @@ An interactive Streamlit dashboard for analyzing dividend data and projecting fu
 ## ✨ Key Features
 
 ### 📈 Data Visualization
-- **Real-time filtering** of tickers
-- **Interactive metrics tiles** with gradient effects
+- Real-time filtering of tickers
+- Interactive metrics tiles with gradient effects
 - Comparative bar charts and pie visualizations
-- **Responsive design** for all screen sizes
+- Responsive design for all screen sizes
 
 ### 🧮 Growth Forecasting
 - Multi-year dividend projections

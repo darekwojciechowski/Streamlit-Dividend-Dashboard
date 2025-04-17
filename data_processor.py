@@ -12,9 +12,6 @@ Methods:
 - clean_data: Cleans column names and converts data types for relevant columns
               (Net Dividend, Tax Collected, Shares).
 - filter_data: Filters the DataFrame based on a list of selected stock tickers.
-
-Author: [Your Name/GitHub Username]
-Date: [Current Date, e.g., July 2024]
 """
 
 import pandas as pd

@@ -14,9 +14,6 @@ Functions:
 - apply_wcag_ui_standards: Determines if a color is light or dark based on luminance.
 - determine_text_color_for_dropdown: Suggests black or white text based on a
                                      background color for contrast.
-
-Author: [Your Name/GitHub Username]
-Date: [Current Date, e.g., July 2024]
 """
 
 # colors_and_styles.py

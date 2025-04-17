@@ -13,9 +13,6 @@ The application allows users to:
 
 It utilizes helper modules for data processing (`data_processor.py`) and
 styling (`styles/colors_and_styles.py`).
-
-Author: [Your Name/GitHub Username]
-Date: [Current Date, e.g., July 2024]
 """
 
 import streamlit as st
