@@ -40,7 +40,7 @@ not directly styled by the Streamlit theme (e.g., Plotly charts, custom HTML).
 BASE_COLORS = [
     '#636EFA', '#EF553B', '#00CC96', '#AB63FA', '#FFA15A',
     '#19D3F3', '#FF6692', '#B6E880', '#FF97FF', '#FECB52'
-] * 2 # Repeating the list to ensure enough unique colors if needed
+] * 2  # Repeating the list to ensure enough unique colors if needed
 
 # Define CSS styles for the application
 CSS_STYLES = """
@@ -64,6 +64,7 @@ CSS_STYLES = """
 </style>
 """
 
+
 def adjust_gradient(color: str) -> str:
     """
     Adjusts the input color to create a slightly lighter version for gradients.
@@ -78,16 +79,18 @@ def adjust_gradient(color: str) -> str:
         if color.startswith('rgb'):
             # Extract numbers, handle potential alpha value if present
             rgb_values = color.split('(')[1].split(')')[0].split(',')
-            rgb = [int(c.strip()) for c in rgb_values[:3]] # Take only first 3 for RGB
+            rgb = [int(c.strip())
+                   for c in rgb_values[:3]]  # Take only first 3 for RGB
         elif color.startswith('#'):
             hex_color = color.lstrip('#')
-            if len(hex_color) == 3: # Handle shorthand hex (e.g., #F00)
-                 hex_color = ''.join([c*2 for c in hex_color])
+            if len(hex_color) == 3:  # Handle shorthand hex (e.g., #F00)
+                hex_color = ''.join([c*2 for c in hex_color])
             if len(hex_color) != 6:
                 raise ValueError("Invalid hex color format")
             rgb = [int(hex_color[i:i+2], 16) for i in (0, 2, 4)]
         else:
-            raise ValueError("Invalid color format. Use #RRGGBB or rgb(r,g,b).")
+            raise ValueError(
+                "Invalid color format. Use #RRGGBB or rgb(r,g,b).")
 
         # Increase brightness slightly, capping at 255
         adjusted = [min(255, c + 40) for c in rgb]
@@ -95,7 +98,8 @@ def adjust_gradient(color: str) -> str:
     except Exception as e:
         print(f"Error adjusting gradient for color '{color}': {e}")
         # Return a default or the original color in case of error
-        return 'rgb(200, 200, 200)' # Default grey
+        return 'rgb(200, 200, 200)'  # Default grey
+
 
 def apply_wcag_ui_standards(color: str) -> bool:
     """
@@ -114,7 +118,7 @@ def apply_wcag_ui_standards(color: str) -> bool:
         if len(color) == 3:
             color = ''.join([c*2 for c in color])
         if len(color) != 6:
-             raise ValueError("Invalid hex color format for WCAG check")
+            raise ValueError("Invalid hex color format for WCAG check")
 
         r = int(color[0:2], 16)
         g = int(color[2:4], 16)
@@ -137,7 +141,8 @@ def apply_wcag_ui_standards(color: str) -> bool:
         return luminance > 0.5
     except Exception as e:
         print(f"Error calculating WCAG luminance for color '{color}': {e}")
-        return True # Default to assuming light background in case of error
+        return True  # Default to assuming light background in case of error
+
 
 def determine_text_color_for_dropdown(bg_color: str) -> str:
     """
@@ -152,3 +157,24 @@ def determine_text_color_for_dropdown(bg_color: str) -> str:
         str: '#000000' (black) if background is light, '#FFFFFF' (white) if background is dark.
     """
     return "#000000" if apply_wcag_ui_standards(bg_color) else "#FFFFFF"
+
+
+def rgb_to_hex(rgb_color: str) -> str:
+    """
+    Converts an RGB color string (e.g., 'rgb(102, 197, 204)') to a hex color string (e.g., '#66C5CC').
+
+    Args:
+        rgb_color (str): The RGB color string.
+
+    Returns:
+        str: The hex color string.
+    """
+    try:
+        # Extract the RGB values from the string
+        rgb_values = rgb_color.strip("rgb()").split(",")
+        r, g, b = [int(value.strip()) for value in rgb_values]
+        return f"#{r:02X}{g:02X}{b:02X}"
+    except Exception as e:
+        # Return a default color if conversion fails
+        print(f"Error converting color {rgb_color}: {e}")
+        return "#000000"  # Black as fallback
