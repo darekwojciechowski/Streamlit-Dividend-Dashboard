@@ -187,7 +187,7 @@ class NivoPieChart:
                 "symbolSize": 20,
                 "symbolShape": "circle",
                 "effects": [
-                    {"on": "hover", "style": {"itemTextColor": "#fafafa"}}
+                    {"on": "hover", "style": {"itemTextColor": "#D8BFD8"}}
                 ],
             }
         ]
