@@ -2,7 +2,7 @@
 
 An interactive Streamlit dashboard for analyzing dividend data and projecting future growth.
 
-➡️ [Access the Live Dashboard](https://datasciencegit-6638jdsdoui7bsbwgenop3.streamlit.app/)
+➡️ [Access the Live Dashboard](https://app-dividend-dashboard-mvywmc9s2qdpkgfdgsccsa.streamlit.app/)
 
 ## 🎥 Demo
 ![Dashboard Demo](assets/streamlit-dashboard-demo.gif)
