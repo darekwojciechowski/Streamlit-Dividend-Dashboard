@@ -1,5 +1,18 @@
 """
-Streamlit Dividend Dashboard Application for analyzing stock dividend data with interactive visualizations and growth projections.
+Streamlit Dividend Dashboard Application
+
+This is the main script for the Streamlit Dividend Dashboard application.
+It orchestrates the user interface, data processing, and visualization
+for analyzing stock dividend data.
+
+The application allows users to:
+- Load and view dividend data for selected stock tickers.
+- See key metrics like total shares held per ticker displayed in interactive tiles.
+- Visualize dividend amounts and distribution using Plotly bar and pie charts.
+- Project future dividend growth based on user-defined growth rates and time periods.
+
+It utilizes helper modules for data processing (`data_processor.py`) and
+styling (`styles/colors_and_styles.py`).
 """
 
 import streamlit as st
@@ -8,20 +21,6 @@ import plotly.express as px
 import random
 from data_processor import DividendDataProcessor
 from components.nivo_pie_chart import NivoPieChart
-from app_config import (
-    DEFAULT_GROWTH_PERCENTAGE,
-    DEFAULT_NUM_YEARS,
-    DEFAULT_PAGE_TITLE,
-    DEFAULT_SIDEBAR_STATE,
-    DEFAULT_DASHBOARD_TITLE,
-    DATA_FILE_PATH,
-    COLOR_THEME,
-    CHART_CONFIG,
-    SLIDER_CONFIG,
-    GROWTH_INPUT_CONFIG,
-    MESSAGES,
-    LABELS
-)
 
 # Import necessary functions from the styles module
 from styles.colors_and_styles import (
@@ -45,11 +44,11 @@ class DividendApp:
         """
         # Set page config - should be the first Streamlit command
         st.set_page_config(
-            page_title=DEFAULT_PAGE_TITLE,
-            initial_sidebar_state=DEFAULT_SIDEBAR_STATE
+            page_title="Dividend Dashboard", initial_sidebar_state="expanded"
         )
         try:
-            self.data_processor = DividendDataProcessor(DATA_FILE_PATH)
+            self.data_processor = DividendDataProcessor(
+                "data/dividend_data.csv")
         except Exception as e:
             st.error(f"Failed to initialize data processor: {e}")
             st.stop()  # Stop execution if data cannot be loaded/processed
@@ -61,8 +60,8 @@ class DividendApp:
         self.ticker_colors = {}
         self.selected_tickers = []
         self.selected_ticker = None
-        self.growth_percentage = DEFAULT_GROWTH_PERCENTAGE
-        self.num_years = DEFAULT_NUM_YEARS
+        self.growth_percentage = 4.0  # Default growth percentage
+        self.num_years = 15  # Default number of years
         self.base_colors = BASE_COLORS
 
     def run(self):
@@ -79,19 +78,19 @@ class DividendApp:
 
     def setup_ui(self):
         """Sets up the main UI elements like title and ticker selection."""
-        st.title(DEFAULT_DASHBOARD_TITLE)
+        st.title("Dividend Data Visualization Dashboard")
         # Ensure data_processor.df is valid before accessing unique()
         if self.data_processor.df is not None and not self.data_processor.df.empty:
             all_tickers = sorted(
                 self.data_processor.df["Ticker"].unique()
             )  # Sort tickers alphabetically
             self.selected_tickers = st.multiselect(
-                LABELS["ticker_select"],
+                "Select tickers to analyze:",
                 options=all_tickers,
                 default=list(all_tickers),  # Default to all tickers selected
             )
         else:
-            st.warning(MESSAGES["no_ticker_data"])
+            st.warning("No ticker data available to select.")
             self.selected_tickers = []
 
     def filter_data(self):
@@ -175,14 +174,14 @@ class DividendApp:
 
     def display_metrics(self):
         """Displays the key metrics (total shares) using generated tiles."""
-        st.markdown(LABELS["total_shares_header"])
+        st.markdown("## Total Shares per Ticker")
         st.markdown(CSS_STYLES, unsafe_allow_html=True)
 
         if not self.aggregated_shares.empty:
             # Ensure base_colors is not empty
             if not self.base_colors:
                 # Provide a default color if empty
-                self.base_colors = [COLOR_THEME["fallback"]]
+                self.base_colors = ["#636EFA"]
 
             tiles_html = "".join(
                 self._generate_tile(
@@ -200,11 +199,11 @@ class DividendApp:
             """
             )
         else:
-            st.info(MESSAGES["no_share_data"])
+            st.info("No share data to display metrics for the selected tickers.")
 
     def display_charts(self):
         """Displays the Plotly bar and NivoPieChart pie charts for dividend analysis."""
-        st.markdown(LABELS["charts_header"])
+        st.markdown("## Dividend Analysis Charts")
         if not self.filtered_df.empty:
             # Define ticker colors using a qualitative palette
             unique_tickers = sorted(
@@ -240,13 +239,13 @@ class DividendApp:
                     x="Ticker",
                     y="Net Dividend",
                     color="Ticker",
-                    title=CHART_CONFIG["bar_chart"]["title"],
+                    title="Total Net Dividends by Ticker",
                     color_discrete_map=self.ticker_colors,  # Pass the color mapping
                 )
                 fig_bar.update_layout(
-                    xaxis_title=CHART_CONFIG["bar_chart"]["x_title"],
-                    yaxis_title=CHART_CONFIG["bar_chart"]["y_title"],
-                    hovermode=CHART_CONFIG["bar_chart"]["hover_mode"],
+                    xaxis_title="Ticker",
+                    yaxis_title="Total Net Dividend (USD)",
+                    hovermode="x unified",
                 )
                 st.plotly_chart(fig_bar, use_container_width=True)
 
@@ -261,27 +260,31 @@ class DividendApp:
                 ]
                 # Update the header for "Dividend Distribution" with the same font size
                 st.markdown(
-                    f"<h3 style='font-size:{CHART_CONFIG['pie_chart']['title_font_size']}; font-weight:bold;'>{CHART_CONFIG['pie_chart']['title']}</h3>",
+                    "<h3 style='font-size:17px; font-weight:bold;'>Dividend Distribution</h3>",
                     unsafe_allow_html=True,
                 )
                 # Pass the ticker_colors mapping to NivoPieChart for consistent coloring
                 nivo_chart = NivoPieChart(nivo_data, colors=self.ticker_colors)
                 nivo_chart.render()
             else:
-                st.info(MESSAGES["no_dividend_data"])
+                st.info(
+                    "No valid 'Net Dividend' data available for the selected tickers to display charts."
+                )
         else:
-            st.info(MESSAGES["no_data_charts"])
+            st.info("No data to display charts for the selected tickers.")
 
     def display_dividend_calculator(self):
         """Displays the UI for the dividend growth calculator."""
         st.markdown("---")
-        st.subheader(LABELS["calculator_header"])
-        st.write(MESSAGES["calculator_description"])
+        st.subheader("Dividend Growth Calculator")
+        st.write(
+            "Project future dividend income based on selected annual growth rate and investment period."
+        )
         st.write("")
 
         # Ensure filtered_df is not empty before showing calculator inputs
         if self.filtered_df.empty:
-            st.warning(MESSAGES["select_tickers_calculator"])
+            st.warning("Please select tickers with data to use the calculator.")
             return
 
         col1, col2 = st.columns(2)
@@ -290,31 +293,30 @@ class DividendApp:
                 self.filtered_df["Ticker"].unique()
             )  # Sort tickers
             if not available_tickers:  # Check if list is empty
-                st.warning(MESSAGES["no_tickers_calculation"])
+                st.warning("No tickers available for calculation.")
                 return
             # Use session state to remember the selected ticker if needed, otherwise default to first
             self.selected_ticker = st.selectbox(
-                LABELS["company_projection"],
+                "Select a company for projection:",
                 available_tickers,
                 index=0,
                 key="calculator_ticker_select",
             )
         with col2:
             self.growth_percentage = st.number_input(
-                LABELS["growth_percentage"],
-                min_value=GROWTH_INPUT_CONFIG["min_value"],
-                step=GROWTH_INPUT_CONFIG["step"],
+                "Annual dividend growth (%)",
+                min_value=0.0,
+                step=0.1,
                 value=self.growth_percentage,
-                format=GROWTH_INPUT_CONFIG["format"],
+                format="%.1f",
                 key="calculator_growth_input",
             )
 
         self.num_years = st.slider(
-            LABELS["projection_years"],
-            min_value=SLIDER_CONFIG["min_years"],
-            max_value=SLIDER_CONFIG["max_years"],
+            "Projection years",
+            min_value=1,
+            max_value=30,
             value=self.num_years,
-            step=SLIDER_CONFIG["step"],
             key="calculator_years_slider",
         )
         self._display_projection_chart()
@@ -322,7 +324,7 @@ class DividendApp:
     def _display_projection_chart(self):
         """Calculates and displays the projected dividend growth chart using the ticker's assigned color."""
         if not self.selected_ticker:
-            st.info(MESSAGES["select_ticker_projection"])
+            st.info("Select a ticker to see the projection.")
             return
 
         ticker_data = self.filtered_df[
@@ -381,7 +383,7 @@ class DividendApp:
             chart_color = self.ticker_colors[self.selected_ticker]
         else:
             # Fallback color if ticker_colors isn't ready or ticker is missing
-            chart_color = COLOR_THEME["fallback"]
+            chart_color = "#1f77b4"  # Default Plotly blue or another sensible default
             # Optionally print a warning if this happens unexpectedly
             # print(f"Warning: Color for ticker {self.selected_ticker} not found in ticker_colors. Using default.")
 
@@ -398,19 +400,15 @@ class DividendApp:
             hovermode="x unified",
         )
 
-        # Add scatter plot for the trend line using the same color
+        # Add scatter plot for the trend line using the primary application color
         fig_projected.add_scatter(
             x=projected_df["Year"],
             y=projected_dividends,
             mode="lines+markers",
             name="Projected Trend",
-            line=dict(
-                color=CHART_CONFIG["projection_chart"]["trend_line_color"],
-                width=CHART_CONFIG["projection_chart"]["trend_line_width"],
-                dash=CHART_CONFIG["projection_chart"]["trend_line_dash"]
-            ),
-            marker=dict(size=CHART_CONFIG["projection_chart"]["marker_size"]),
-        )  # Apply the looked-up color
+            line=dict(color="#8a2be2", width=2, dash="dot"),
+            marker=dict(size=5),
+        )
 
         st.plotly_chart(fig_projected, use_container_width=True)
 
