@@ -1,22 +1,9 @@
 """
-Color and Style Definitions for Dividend Dashboard
-
-This module centralizes color palettes, CSS styles, and utility functions
-related to visual styling and accessibility for the Streamlit application.
-
-Constants:
-- BASE_COLORS: A list of hex color codes for general use (e.g., charts, tiles).
-- CSS_STYLES: A string containing CSS rules for custom styling of components
-              (e.g., gradient tiles).
-
-Functions:
-- adjust_gradient: Modifies a color to create a gradient effect.
-- apply_wcag_ui_standards: Determines if a color is light or dark based on luminance.
-- determine_text_color_for_dropdown: Suggests black or white text based on a
-                                     background color for contrast.
+Color and style definitions for the Dividend Dashboard including palettes, CSS styles, and accessibility utility functions.
 """
 
 # colors_and_styles.py
+from app_config import COLOR_THEME
 
 '''
 Theme Configuration Note:
