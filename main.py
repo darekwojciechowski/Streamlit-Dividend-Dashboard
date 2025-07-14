@@ -344,8 +344,10 @@ class DividendApp:
             return None
 
         initial_dividend = initial_dividend_series.iloc[0]
+        currency_symbol = self._get_currency_symbol(self.selected_ticker)
         if initial_dividend <= 0:
-            st.warning(f"Invalid dividend amount ({initial_dividend:.2f} USD)")
+            st.warning(
+                f"Invalid dividend amount ({initial_dividend:.2f} {currency_symbol})")
             return None
 
         return initial_dividend
@@ -356,6 +358,18 @@ class DividendApp:
             "Net Dividend" in ticker_data.columns
             and not ticker_data["Net Dividend"].isnull().all()
         )
+
+    def _get_currency_symbol(self, ticker: str) -> str:
+        """Get currency symbol based on ticker country code."""
+        if "." in ticker:
+            country_code = ticker.split(".")[-1]
+            if country_code == "PL":
+                return "PLN"
+            elif country_code == "US":
+                return "$"
+            elif country_code == "EU":
+                return "€"
+        return "$"  # Default fallback
 
     def _calculate_projection(self, initial_dividend: float) -> pd.DataFrame:
         """Calculate dividend projection data."""
@@ -369,7 +383,7 @@ class DividendApp:
 
         return pd.DataFrame({
             "Year": years,
-            "Projected Dividend (USD)": projected_dividends,
+            "Projected Dividend": projected_dividends,
             "Ticker": [self.selected_ticker] * self.num_years,
         })
 
@@ -381,19 +395,21 @@ class DividendApp:
             self.selected_ticker, COLOR_THEME["fallback"]
         )
 
+        currency_symbol = self._get_currency_symbol(self.selected_ticker)
+
         fig_projected = px.bar(
             projected_df,
             x="Year",
-            y="Projected Dividend (USD)",
+            y="Projected Dividend",
             title=f"Projected Dividends for {self.selected_ticker} "
-            f"(Starting: ${initial_dividend:.2f})",
+            f"(Starting: {currency_symbol}{initial_dividend:.2f})",
             color_discrete_sequence=[chart_color],
         )
 
         # Add trend line
         fig_projected.add_scatter(
             x=projected_df["Year"],
-            y=projected_df["Projected Dividend (USD)"],
+            y=projected_df["Projected Dividend"],
             mode="lines+markers",
             name="Projected Trend",
             line=dict(color=COLOR_THEME["primary"], width=2, dash="dot"),
@@ -402,7 +418,7 @@ class DividendApp:
 
         fig_projected.update_layout(
             xaxis_title="Year",
-            yaxis_title="Projected Dividend (USD)",
+            yaxis_title=f"Projected Dividend ({currency_symbol})",
             hovermode="x unified",
         )
 
