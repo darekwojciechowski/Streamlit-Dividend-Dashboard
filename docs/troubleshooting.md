@@ -14,6 +14,7 @@ This document contains common errors encountered during development and their so
 - The problem may be related to browser cache
 - It's recommended to test the application in different browsers during development
 - You can also try clearing the browser cache before switching browsers
+- Make sure that `.streamlit/config.toml` color settings are consistent with `app_config.py` configuration to avoid styling conflicts
 
 ---
 

@@ -1,27 +1,4 @@
-"""
-Color and style definitions for the Dividend Dashboard including palettes, CSS styles, and accessibility utility functions.
-"""
-
-# colors_and_styles.py
-from app_config import COLOR_THEME
-
-'''
-Theme Configuration Note:
-
-The primary color (#8A2BE2 - Violet) and base theme (dark) are primarily
-configured via the .streamlit/config.toml file for Streamlit's built-in widgets.
-
-Example .streamlit/config.toml:
-[theme]
-base="dark"
-primaryColor="#8a2be2"
-backgroundColor = "#0E1117"
-secondaryBackgroundColor = "#262730"
-textColor="#fffafa"
-
-This file defines constants and functions for custom components or elements
-not directly styled by the Streamlit theme (e.g., Plotly charts, custom HTML).
-'''
+"""Color and style definitions module with palettes, CSS styles, and accessibility utility functions."""
 
 # Define a list of base colors for the application
 BASE_COLORS = [

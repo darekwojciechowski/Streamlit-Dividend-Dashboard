@@ -1,18 +1,4 @@
-"""
-Data Processor for Dividend Data
-
-This module defines the DividendDataProcessor class, responsible for loading,
-cleaning, and filtering dividend data from a specified CSV file.
-
-The class expects a tab-separated CSV file with specific columns related to
-dividend information (Ticker, Net Dividend, Tax Collected, Shares).
-
-Methods:
-- load_data: Loads the data from the CSV file using pandas.
-- clean_data: Cleans column names and converts data types for relevant columns
-              (Net Dividend, Tax Collected, Shares).
-- filter_data: Filters the DataFrame based on a list of selected stock tickers.
-"""
+"""Data processor for loading, cleaning, and filtering dividend data from CSV files."""
 
 import pandas as pd
 # Removed unused imports: random, numpy
