@@ -1,16 +1,13 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import random
+
 from data_processor import DividendDataProcessor
 from components.nivo_pie_chart import NivoPieChart
-from styles.colors_and_styles import (
-    BASE_COLORS,
-    CSS_STYLES,
-    adjust_gradient,
-    determine_text_color_for_dropdown,
-)
+from utils.color_manager import ColorManager
+from utils.dividend_calculator import DividendCalculator
+from styles.colors_and_styles import CSS_STYLES
 from app_config import (
     DEFAULT_GROWTH_PERCENTAGE,
     DEFAULT_NUM_YEARS,
@@ -23,218 +20,121 @@ from app_config import (
 
 
 class DividendApp:
-    """
-    Modern Streamlit Dividend Dashboard Application.
-
-    Clean, maintainable implementation following Python 2025 best practices.
-    Focused on separation of concerns and readability.
-    """
+    """Modern Streamlit Dividend Dashboard Application."""
 
     def __init__(self) -> None:
-        """Initialize the application with default configuration."""
-        self._configure_streamlit()
-        self._initialize_data_processor()
-        self._initialize_state()
-
-    def _configure_streamlit(self) -> None:
-        """Configure Streamlit page settings."""
+        """Initialize the application."""
         st.set_page_config(
             page_title=DEFAULT_PAGE_TITLE,
             initial_sidebar_state=DEFAULT_SIDEBAR_STATE,
             layout=DEFAULT_LAYOUT
         )
 
-    def _initialize_data_processor(self) -> None:
-        """Initialize the data processor with error handling."""
-        try:
-            self.data_processor = DividendDataProcessor(DATA_FILE_PATH)
-        except Exception as e:
-            st.error(f"Failed to initialize data processor: {e}")
-            st.stop()
+        self.data_processor = self._load_data()
+        self.color_manager = ColorManager()
+        self.calculator = DividendCalculator()
 
-    def _initialize_state(self) -> None:
-        """Initialize application state variables."""
+        # Application state
         self.filtered_df = pd.DataFrame()
-        self.aggregated_shares = pd.DataFrame(columns=["Ticker", "Shares"])
-        self.ticker_colors: Dict[str, str] = {}
         self.selected_tickers: List[str] = []
         self.selected_ticker: Optional[str] = None
 
+    def _load_data(self) -> DividendDataProcessor:
+        """Load and initialize data processor."""
+        try:
+            return DividendDataProcessor(DATA_FILE_PATH)
+        except Exception as e:
+            st.error(f"Failed to load data: {e}")
+            st.stop()
+
     def run(self) -> None:
         """Main application flow."""
-        self._setup_ui()
+        st.title("Dividend Analysis Dashboard")
+
+        self._render_ticker_selector()
         self._process_data()
         self._render_dashboard()
 
-    def _setup_ui(self) -> None:
-        """Setup the main user interface."""
-        st.title("Dividend Analysis Dashboard")
-        self._render_ticker_selector()
-
     def _render_ticker_selector(self) -> None:
         """Render the ticker selection widget."""
-        if not self._has_valid_data():
-            st.warning("No ticker data available to select.")
+        if self.data_processor.df is None or self.data_processor.df.empty:
+            st.warning("No data available.")
             return
 
-        all_tickers = self._get_available_tickers()
+        all_tickers = sorted(self.data_processor.df["Ticker"].unique())
         self.selected_tickers = st.multiselect(
             "Select tickers to analyze:",
             options=all_tickers,
             default=all_tickers,
-            help="Choose one or more stock tickers for analysis"
+            help="Choose stock tickers for analysis"
         )
-
-    def _has_valid_data(self) -> bool:
-        """Check if data processor has valid data."""
-        return (
-            self.data_processor.df is not None
-            and not self.data_processor.df.empty
-        )
-
-    def _get_available_tickers(self) -> List[str]:
-        """Get sorted list of available tickers."""
-        return sorted(self.data_processor.df["Ticker"].unique())
 
     def _process_data(self) -> None:
         """Process and filter data based on selections."""
-        self._filter_data()
-        self._aggregate_shares()
-        self._generate_ticker_colors()
-
-    def _filter_data(self) -> None:
-        """Filter data based on selected tickers."""
-        if not self.selected_tickers or not self._has_valid_data():
+        if not self.selected_tickers:
             self.filtered_df = pd.DataFrame()
             return
 
         self.filtered_df = self.data_processor.filter_data(
             self.selected_tickers)
 
-    def _aggregate_shares(self) -> None:
-        """Aggregate total shares per ticker."""
-        if not self._has_shares_data():
-            self.aggregated_shares = pd.DataFrame(columns=["Ticker", "Shares"])
-            return
-
-        self.filtered_df["Shares"] = pd.to_numeric(
-            self.filtered_df["Shares"], errors="coerce"
-        )
-        self.aggregated_shares = self.filtered_df.groupby(
-            "Ticker", as_index=False
-        ).agg({"Shares": "sum"})
-
-    def _has_shares_data(self) -> bool:
-        """Check if filtered data has shares information."""
-        return (
-            not self.filtered_df.empty
-            and "Ticker" in self.filtered_df.columns
-            and "Shares" in self.filtered_df.columns
-        )
-
-    def _generate_ticker_colors(self) -> None:
-        """Generate consistent colors for tickers."""
-        if self.filtered_df.empty:
-            self.ticker_colors = {}
-            return
-
-        unique_tickers = sorted(self.filtered_df["Ticker"].unique())
-        color_palette = px.colors.qualitative.Pastel
-
-        self.ticker_colors = {
-            ticker: color_palette[i % len(color_palette)]
-            for i, ticker in enumerate(unique_tickers)
-        }
+        # Convert numpy array to list to avoid ambiguous truth value errors
+        unique_tickers = list(
+            self.filtered_df["Ticker"].unique()) if not self.filtered_df.empty else []
+        self.color_manager.generate_colors_for_tickers(unique_tickers)
 
     def _render_dashboard(self) -> None:
         """Render the main dashboard components."""
-        self._render_metrics_section()
-        self._render_charts_section()
-        self._render_calculator_section()
+        if self.filtered_df.empty:
+            st.info("Select tickers to view analysis.")
+            return
 
-    def _render_metrics_section(self) -> None:
-        """Render the metrics tiles section."""
+        self._render_portfolio_overview()
+        self._render_dividend_analysis()
+        self._render_calculator()
+
+    def _render_portfolio_overview(self) -> None:
+        """Render portfolio overview with share metrics."""
         st.markdown("## Portfolio Overview")
         st.markdown(CSS_STYLES, unsafe_allow_html=True)
 
-        if self.aggregated_shares.empty:
-            st.info("No share data available for selected tickers.")
+        if "Shares" not in self.filtered_df.columns:
+            st.info("No share data available.")
             return
 
-        tiles_html = self._generate_tiles_html()
+        # Aggregate shares by ticker
+        aggregated = self.filtered_df.groupby(
+            "Ticker", as_index=False)["Shares"].sum()
+
+        tiles_html = "".join(
+            self.color_manager.create_tile_html(row["Ticker"], row["Shares"])
+            for _, row in aggregated.iterrows()
+        )
+
         st.html(f'<div class="tiles-container">{tiles_html}</div>')
 
-    def _generate_tiles_html(self) -> str:
-        """Generate HTML for all metric tiles."""
-        return "".join(
-            self._create_tile_html(row["Ticker"], row["Shares"])
-            for _, row in self.aggregated_shares.iterrows()
-        )
-
-    def _create_tile_html(self, ticker: str, shares: float) -> str:
-        """Create HTML for a single metric tile."""
-        color = random.choice(BASE_COLORS) if BASE_COLORS else "#636EFA"
-        gradient_color = adjust_gradient(color)
-        text_color = determine_text_color_for_dropdown(color)
-        formatted_shares = f"{shares:,.0f}" if pd.notna(shares) else "N/A"
-
-        return f"""
-        <div class="gradient-tile" style="
-            background: linear-gradient(145deg, {color} 0%, {gradient_color} 100%);
-            border-radius: 15px; padding: 1.5rem; margin: 1rem;
-            color: {text_color}; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            min-width: 250px; transition: all 0.3s ease;
-            position: relative; overflow: hidden;
-        ">
-            <div style="
-                position: absolute; top: -20px; right: -20px;
-                width: 60px; height: 60px;
-                background: {gradient_color}40; border-radius: 50%;
-            "></div>
-            <h3 style="margin:0; font-size:1.5rem; position: relative; font-weight:600;">
-                {ticker}
-            </h3>
-            <p style="font-size:2.5rem; margin:0.5rem 0; font-weight:800; position: relative;">
-                {formatted_shares}<span style="font-size:1rem; font-weight:500;"> shares</span>
-            </p>
-        </div>
-        """
-
-    def _render_charts_section(self) -> None:
-        """Render the charts section."""
+    def _render_dividend_analysis(self) -> None:
+        """Render dividend analysis charts."""
         st.markdown("## Dividend Analysis")
 
-        if not self._has_dividend_data():
-            st.info("No dividend data available for selected tickers.")
+        if "Net Dividend" not in self.filtered_df.columns:
+            st.info("No dividend data available.")
             return
 
-        chart_data = self._prepare_chart_data()
-        self._render_bar_chart(chart_data)
-        self._render_pie_chart(chart_data)
+        # Prepare chart data
+        chart_data = (self.filtered_df
+                      .groupby("Ticker", as_index=False)["Net Dividend"]
+                      .sum()
+                      .sort_values("Ticker"))
 
-    def _has_dividend_data(self) -> bool:
-        """Check if filtered data has dividend information."""
-        return (
-            not self.filtered_df.empty
-            and "Net Dividend" in self.filtered_df.columns
-            and self.filtered_df["Net Dividend"].notna().any()
-        )
-
-    def _prepare_chart_data(self) -> pd.DataFrame:
-        """Prepare aggregated data for charts."""
-        return self.filtered_df.groupby("Ticker", as_index=False)[
-            "Net Dividend"
-        ].sum().sort_values("Ticker").reset_index(drop=True)
-
-    def _render_bar_chart(self, chart_data: pd.DataFrame) -> None:
-        """Render the dividend bar chart."""
+        # Bar chart
         fig_bar = px.bar(
             chart_data,
             x="Ticker",
             y="Net Dividend",
             color="Ticker",
             title="Total Net Dividends by Ticker",
-            color_discrete_map=self.ticker_colors,
+            color_discrete_map=self.color_manager.ticker_colors,
         )
         fig_bar.update_layout(
             xaxis_title="Ticker",
@@ -243,190 +143,109 @@ class DividendApp:
         )
         st.plotly_chart(fig_bar, use_container_width=True)
 
-    def _render_pie_chart(self, chart_data: pd.DataFrame) -> None:
-        """Render the dividend pie chart."""
-        st.markdown(
-            "<h3 style='font-size:17px; font-weight:bold;'>Dividend Distribution</h3>",
-            unsafe_allow_html=True,
-        )
-
+        # Pie chart
+        st.markdown("### Distribution Breakdown")
         nivo_data = [
-            {
-                "id": row["Ticker"],
-                "label": row["Ticker"],
-                "value": row["Net Dividend"],
-            }
+            {"id": row["Ticker"], "label": row["Ticker"],
+                "value": row["Net Dividend"]}
             for _, row in chart_data.iterrows()
         ]
+        NivoPieChart(
+            nivo_data, colors=self.color_manager.ticker_colors).render()
 
-        nivo_chart = NivoPieChart(nivo_data, colors=self.ticker_colors)
-        nivo_chart.render()
-
-    def _render_calculator_section(self) -> None:
-        """Render the dividend growth calculator section."""
+    def _render_calculator(self) -> None:
+        """Render dividend growth calculator."""
         st.markdown("---")
         st.subheader("Dividend Growth Calculator")
         st.write("Project future dividend income based on growth assumptions.")
 
-        if self.filtered_df.empty:
-            st.warning("Please select tickers with data to use the calculator.")
-            return
-
-        self._render_calculator_inputs()
-        self._render_projection_chart()
-
-    def _render_calculator_inputs(self) -> None:
-        """Render calculator input controls."""
         available_tickers = sorted(self.filtered_df["Ticker"].unique())
-
         if not available_tickers:
             st.warning("No tickers available for calculation.")
             return
 
+        # Input controls
         col1, col2 = st.columns(2)
 
         with col1:
             self.selected_ticker = st.selectbox(
-                "Select company for projection:",
+                "Select company:",
                 available_tickers,
-                index=0,
-                key="calculator_ticker_select",
+                key="calc_ticker"
             )
 
         with col2:
-            self.growth_percentage = st.number_input(
-                "Annual dividend growth (%)",
+            growth_rate = st.number_input(
+                "Annual growth (%)",
                 min_value=0.0,
                 step=0.1,
                 value=DEFAULT_GROWTH_PERCENTAGE,
-                format="%.1f",
-                key="calculator_growth_input",
+                key="calc_growth"
             )
 
-        self.num_years = st.slider(
+        years = st.slider(
             "Projection years",
             min_value=1,
             max_value=30,
             value=DEFAULT_NUM_YEARS,
-            key="calculator_years_slider",
+            key="calc_years"
         )
 
-    def _render_projection_chart(self) -> None:
-        """Render the dividend projection chart."""
-        if not self.selected_ticker:
-            st.info("Select a ticker to see the projection.")
-            return
+        # Calculate and display projections
+        if self.selected_ticker:
+            self._show_projection(growth_rate, years)
 
-        initial_dividend = self._get_initial_dividend()
-        if initial_dividend is None:
-            return
-
-        projection_data = self._calculate_projection(initial_dividend)
-        self._display_projection_chart(projection_data, initial_dividend)
-
-    def _get_initial_dividend(self) -> Optional[float]:
-        """Get the initial dividend for the selected ticker."""
+    def _show_projection(self, growth_rate: float, years: int) -> None:
+        """Show dividend projections for selected ticker."""
         ticker_data = self.filtered_df[
             self.filtered_df["Ticker"] == self.selected_ticker
         ]
 
-        if ticker_data.empty:
-            st.warning(f"No data found for {self.selected_ticker}")
-            return None
-
-        if not self._has_valid_dividend_data(ticker_data):
+        initial_dividend = self.calculator.get_initial_dividend(ticker_data)
+        if initial_dividend is None:
             st.warning(f"No valid dividend data for {self.selected_ticker}")
-            return None
+            return
 
-        initial_dividend_series = ticker_data["Net Dividend"].dropna()
-        if initial_dividend_series.empty:
-            st.warning(f"No valid dividend found for {self.selected_ticker}")
-            return None
-
-        initial_dividend = initial_dividend_series.iloc[0]
-        currency_symbol = self._get_currency_symbol(self.selected_ticker)
-        if initial_dividend <= 0:
-            st.warning(
-                f"Invalid dividend amount ({initial_dividend:.2f} {currency_symbol})")
-            return None
-
-        return initial_dividend
-
-    def _has_valid_dividend_data(self, ticker_data: pd.DataFrame) -> bool:
-        """Check if ticker data has valid dividend information."""
-        return (
-            "Net Dividend" in ticker_data.columns
-            and not ticker_data["Net Dividend"].isnull().all()
+        # Calculate projections
+        projections = self.calculator.calculate_projections(
+            initial_dividend, growth_rate, years
         )
 
-    def _get_currency_symbol(self, ticker: str) -> str:
-        """Get currency symbol based on ticker country code."""
-        if "." in ticker:
-            country_code = ticker.split(".")[-1]
-            if country_code == "PL":
-                return "PLN"
-            elif country_code == "US":
-                return "$"
-            elif country_code == "EU":
-                return "€"
-        return "$"  # Default fallback
-
-    def _calculate_projection(self, initial_dividend: float) -> pd.DataFrame:
-        """Calculate dividend projection data."""
-        current_year = pd.Timestamp.now().year
-        years = list(range(current_year, current_year + self.num_years))
-
-        projected_dividends = [
-            initial_dividend * (1 + self.growth_percentage / 100) ** i
-            for i in range(self.num_years)
-        ]
-
-        return pd.DataFrame({
-            "Year": years,
-            "Projected Dividend": projected_dividends,
-            "Ticker": [self.selected_ticker] * self.num_years,
-        })
-
-    def _display_projection_chart(
-        self, projected_df: pd.DataFrame, initial_dividend: float
-    ) -> None:
-        """Display the projection chart with trend line."""
-        chart_color = self.ticker_colors.get(
+        # Create chart
+        currency = self.calculator.get_currency_symbol(self.selected_ticker)
+        chart_color = self.color_manager.ticker_colors.get(
             self.selected_ticker, COLOR_THEME["fallback"]
         )
 
-        currency_symbol = self._get_currency_symbol(self.selected_ticker)
-
-        fig_projected = px.bar(
-            projected_df,
+        fig = px.bar(
+            projections,
             x="Year",
             y="Projected Dividend",
             title=f"Projected Dividends for {self.selected_ticker} "
-            f"(Starting: {currency_symbol}{initial_dividend:.2f})",
+            f"(Starting: {currency}{initial_dividend:.2f})",
             color_discrete_sequence=[chart_color],
         )
 
         # Add trend line
-        fig_projected.add_scatter(
-            x=projected_df["Year"],
-            y=projected_df["Projected Dividend"],
+        fig.add_scatter(
+            x=projections["Year"],
+            y=projections["Projected Dividend"],
             mode="lines+markers",
-            name="Projected Trend",
+            name="Trend",
             line=dict(color=COLOR_THEME["primary"], width=2, dash="dot"),
-            marker=dict(size=5),
         )
 
-        fig_projected.update_layout(
+        fig.update_layout(
             xaxis_title="Year",
-            yaxis_title=f"Projected Dividend ({currency_symbol})",
+            yaxis_title=f"Projected Dividend ({currency})",
             hovermode="x unified",
         )
 
-        st.plotly_chart(fig_projected, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True)
 
 
 def main() -> None:
-    """Main entry point for the application."""
+    """Application entry point."""
     app = DividendApp()
     app.run()
 
