@@ -40,24 +40,7 @@ class NivoPieChart:
             "arcLinkLabelsThickness": 2,
             "arcLinkLabelsColor": {"from": "color"},
             "arcLabelsSkipAngle": 360,  # Skip all arc labels
-            "legends": [
-                {
-                    "anchor": "bottom",
-                    "direction": "row",
-                    "justify": False,
-                    "translateX": 0,
-                    "translateY": 90,
-                    "itemsSpacing": 0,
-                    "itemWidth": 100,
-                    "itemHeight": 18,
-                    "itemTextColor": "#999",
-                    "itemDirection": "left-to-right",
-                    "itemOpacity": 1,
-                    "symbolSize": 20,
-                    "symbolShape": "circle",
-                    "effects": [{"on": "hover", "style": {"itemTextColor": "#D8BFD8"}}],
-                }
-            ],
+            "legends": [],
             "theme": {
                 "tooltip": {
                     "container": {
