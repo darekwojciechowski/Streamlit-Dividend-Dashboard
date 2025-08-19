@@ -11,16 +11,31 @@ class NivoPieChart:
 
     def __init__(self, data, colors=None, height=500):
         """Initialize pie chart with essential parameters only."""
-        # Process data with colors
+        # Define available patterns
+        self.patterns = [
+            {"id": "dots", "type": "patternDots", "background": "inherit",
+                "color": "rgba(255, 255, 255, 0.3)", "size": 4, "padding": 1, "stagger": True},
+            {"id": "lines", "type": "patternLines", "background": "inherit",
+                "color": "rgba(255, 255, 255, 0.3)", "rotation": -45, "lineWidth": 6, "spacing": 10},
+            {"id": "horizontalLines", "type": "patternLines", "background": "inherit",
+                "color": "rgba(255, 255, 255, 0.3)", "rotation": 0, "lineWidth": 6, "spacing": 10},
+            {"id": "squares", "type": "patternSquares", "background": "inherit",
+                "color": "rgba(255, 255, 255, 0.3)", "size": 6, "padding": 2, "stagger": True}
+        ]
+
+        # Process data with colors and random patterns
         if colors:
             self.data = [
                 {**item,
-                    "color": rgb_to_hex(colors.get(item["id"], "#636EFA"))}
+                    "color": rgb_to_hex(colors.get(item["id"], "#636EFA")),
+                    "pattern": random.choice(self.patterns)["id"]}
                 for item in data
             ]
         else:
             self.data = [
-                {**item, "color": rgb_to_hex(item.get("color", "#636EFA"))}
+                {**item,
+                 "color": rgb_to_hex(item.get("color", "#636EFA")),
+                 "pattern": random.choice(self.patterns)["id"]}
                 for item in data
             ]
 
@@ -41,6 +56,11 @@ class NivoPieChart:
             "arcLinkLabelsColor": {"from": "color"},
             "arcLabelsSkipAngle": 360,  # Skip all arc labels
             "legends": [],
+            "defs": self.patterns,
+            "fill": [
+                {"match": {"id": item["id"]}, "id": item["pattern"]}
+                for item in self.data
+            ],
             "theme": {
                 "tooltip": {
                     "container": {
