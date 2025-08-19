@@ -28,11 +28,11 @@ class NivoPieChart:
 
         # Simplified configuration
         self.config = {
-            "margin": {"top": 100, "right": 100, "bottom": 100, "left": 100},
+            "margin": {"top": 30, "right": 30, "bottom": 30, "left": 30},
             "innerRadius": 0.5,
             "padAngle": 0.7,
             "cornerRadius": 3,
-            "activeOuterRadiusOffset": 8,
+            "activeOuterRadiusOffset": 6,
             "borderWidth": 1,
             "borderColor": {"from": "color", "modifiers": [["darker", 0.8]]},
             "arcLinkLabelsSkipAngle": 10,
@@ -61,7 +61,12 @@ class NivoPieChart:
     def render(self):
         """Render the pie chart."""
         with elements("nivo_pie_chart"):
-            with mui.Box(sx={"height": self.height}):
+            with mui.Box(sx={
+                "height": self.height,
+                "width": "100%",
+                "minHeight": "300px",
+                "maxWidth": "100%"
+            }):
                 nivo.Pie(
                     data=self.data,
                     colors={"datum": "data.color"},

@@ -151,7 +151,7 @@ class DividendApp:
             for _, row in chart_data.iterrows()
         ]
         NivoPieChart(
-            nivo_data, colors=self.color_manager.ticker_colors).render()
+            nivo_data, colors=self.color_manager.ticker_colors, height=400).render()
 
     def _render_calculator(self) -> None:
         """Render dividend growth calculator."""
