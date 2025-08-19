@@ -28,7 +28,7 @@ class NivoPieChart:
 
         # Simplified configuration
         self.config = {
-            "margin": {"top": 30, "right": 110, "bottom": 30, "left": 110},
+            "margin": {"top": 80, "right": 110, "bottom": 80, "left": 110},
             "innerRadius": 0.5,
             "padAngle": 0.7,
             "cornerRadius": 3,
