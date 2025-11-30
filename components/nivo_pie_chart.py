@@ -66,8 +66,10 @@ class NivoPieChart:
                     "container": {
                         "background": "rgba(30, 41, 59, 0.95)",
                         "color": "#f1f5f9",
-                        "fontSize": 18,
-                        "fontFamily": "Inter, Segoe UI, Arial, sans-serif",
+                        "fontSize": "clamp(1rem, 0.95rem + 0.25vw, 1.125rem)",
+                        "fontFamily": "'Inter var', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif",
+                        "lineHeight": "1.5",
+                        "fontWeight": "500",
                         "padding": "16px 24px",
                         "borderRadius": "16px",
                         "boxShadow": "0 8px 32px 0 rgba(31, 38, 135, 0.37)",

@@ -51,11 +51,11 @@ class ColorManager:
                 width: 60px; height: 60px;
                 background: {gradient_color}40; border-radius: 50%;
             "></div>
-            <h3 style="margin:0; font-size:1.5rem; position: relative; font-weight:600;">
+            <h3 style="position: relative;">
                 {ticker}
             </h3>
-            <p style="font-size:2.5rem; margin:0.5rem 0; font-weight:800; position: relative;">
-                {formatted_shares}<span style="font-size:1rem; font-weight:500;"> shares</span>
+            <p class="tile-value" style="position: relative;">
+                {formatted_shares}<span class="tile-label"> shares</span>
             </p>
         </div>
         """
