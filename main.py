@@ -177,9 +177,11 @@ class DividendApp:
         with col2:
             growth_rate = st.number_input(
                 "Annual growth (%)",
-                min_value=0.0,
-                step=0.1,
-                value=DEFAULT_GROWTH_PERCENTAGE,
+                min_value=0,
+                max_value=100,
+                step=1,
+                value=int(DEFAULT_GROWTH_PERCENTAGE),
+                format="%d",
                 key="calc_growth"
             )
 
