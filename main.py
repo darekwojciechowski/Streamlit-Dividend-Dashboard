@@ -156,8 +156,8 @@ class DividendApp:
     def _render_calculator(self) -> None:
         """Render dividend growth calculator."""
         st.markdown("---")
-        st.subheader("Dividend Growth Calculator")
-        st.write("Project future dividend income based on growth assumptions.")
+        st.header("Dividend Growth Calculator")
+        st.caption("Project future dividend income based on growth assumptions.")
 
         available_tickers = sorted(self.filtered_df["Ticker"].unique())
         if not available_tickers:
@@ -206,13 +206,40 @@ class DividendApp:
             st.warning(f"No valid dividend data for {self.selected_ticker}")
             return
 
+        # Get currency symbol
+        currency = self.calculator.get_currency_symbol(self.selected_ticker)
+
         # Calculate projections
         projections = self.calculator.calculate_projections(
             initial_dividend, growth_rate, years
         )
 
+        # Calculate growth info
+        growth_info = self.calculator.calculate_growth_info(
+            initial_dividend, growth_rate, years
+        )
+
+        # Display growth metrics
+        st.subheader("Growth Summary")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric(
+                label=f"Starting Dividend",
+                value=f"{currency}{initial_dividend:.2f}"
+            )
+        with col2:
+            st.metric(
+                label=f"Dividend After {years} Years",
+                value=f"{currency}{growth_info['final_dividend']:.2f}",
+                delta=f"+{growth_info['total_growth_pct']:.1f}%"
+            )
+        with col3:
+            st.metric(
+                label="Total Increase",
+                value=f"{currency}{growth_info['total_increase']:.2f}"
+            )
+
         # Create chart
-        currency = self.calculator.get_currency_symbol(self.selected_ticker)
         chart_color = self.color_manager.ticker_colors.get(
             self.selected_ticker, COLOR_THEME["fallback"]
         )

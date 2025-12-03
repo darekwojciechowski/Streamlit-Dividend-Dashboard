@@ -48,3 +48,19 @@ class DividendCalculator:
             "Year": year_range,
             "Projected Dividend": projected_dividends
         })
+
+    @staticmethod
+    def calculate_growth_info(initial_dividend: float, growth_rate: float, years: int) -> dict:
+        """Calculate growth statistics for the projection period."""
+        final_dividend = initial_dividend * \
+            (1 + growth_rate / 100) ** (years - 1)
+        total_growth_pct = (
+            (final_dividend - initial_dividend) / initial_dividend) * 100
+        total_increase = final_dividend - initial_dividend
+
+        return {
+            "final_dividend": final_dividend,
+            "total_growth_pct": total_growth_pct,
+            "total_increase": total_increase,
+            "years": years
+        }
