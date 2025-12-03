@@ -241,18 +241,41 @@ class DividendApp:
                 value=f"{currency}{growth_info['total_increase']:.2f}"
             )
 
-        # Create chart
+        # Create chart with color coding for doubling milestones
         chart_color = self.color_manager.ticker_colors.get(
             self.selected_ticker, COLOR_THEME["fallback"]
         )
+
+        # Mark only the specific years where dividend crosses doubling thresholds (2x, 4x, 8x, etc.)
+        projections['Milestone'] = 'Normal'
+
+        for i in range(len(projections)):
+            current_value = projections.iloc[i]['Projected Dividend']
+
+            # Check if this is the first year to cross each doubling threshold
+            for multiplier in [2, 4, 8, 16, 32, 64]:
+                threshold = initial_dividend * multiplier
+
+                # Check if current value crosses threshold
+                if current_value >= threshold:
+                    # Check if previous value was below threshold (first crossing)
+                    if i == 0 or projections.iloc[i-1]['Projected Dividend'] < threshold:
+                        projections.loc[projections.index[i],
+                                        'Milestone'] = 'Doubled'
+                        break
 
         fig = px.bar(
             projections,
             x="Year",
             y="Projected Dividend",
+            color="Milestone",
             title=f"Projected Dividends for {self.selected_ticker} "
             f"(Starting: {currency}{initial_dividend:.2f})",
-            color_discrete_sequence=[chart_color],
+            color_discrete_map={
+                'Normal': chart_color,
+                # Use theme color for doubling milestones
+                'Doubled': COLOR_THEME["primary"]
+            },
         )
 
         # Add trend line
