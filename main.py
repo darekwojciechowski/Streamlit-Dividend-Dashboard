@@ -115,7 +115,7 @@ class DividendApp:
 
     def _render_dividend_analysis(self) -> None:
         """Render dividend analysis charts."""
-        st.markdown("## Dividend Analysis")
+        st.markdown("## Distribution Breakdown")
 
         if "Net Dividend" not in self.filtered_df.columns:
             st.info("No dividend data available.")
@@ -127,24 +127,7 @@ class DividendApp:
                       .sum()
                       .sort_values("Ticker"))
 
-        # Bar chart
-        fig_bar = px.bar(
-            chart_data,
-            x="Ticker",
-            y="Net Dividend",
-            color="Ticker",
-            title="Total Net Dividends by Ticker",
-            color_discrete_map=self.color_manager.ticker_colors,
-        )
-        fig_bar.update_layout(
-            xaxis_title="Ticker",
-            yaxis_title="Total Net Dividend (USD)",
-            hovermode="x unified",
-        )
-        st.plotly_chart(fig_bar, use_container_width=True)
-
         # Pie chart
-        st.markdown("### Distribution Breakdown")
         nivo_data = [
             {"id": row["Ticker"], "label": row["Ticker"],
                 "value": row["Net Dividend"]}
