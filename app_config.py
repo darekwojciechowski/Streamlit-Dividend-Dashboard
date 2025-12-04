@@ -4,7 +4,7 @@ Contains all configurable constants and default values.
 """
 
 # Default values for dividend calculator
-DEFAULT_GROWTH_PERCENTAGE = 4.0
+DEFAULT_GROWTH_PERCENTAGE = 7.0
 DEFAULT_NUM_YEARS = 15
 
 # UI Configuration

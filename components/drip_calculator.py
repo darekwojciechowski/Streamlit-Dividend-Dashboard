@@ -239,8 +239,8 @@ class DRIPCalculator:
             annotation.update(
                 font=dict(size=15, color='#f3f4f6',
                           family='Inter, system-ui, sans-serif', weight=600),
-                xanchor='left',
-                x=annotation.x - 0.05
+                xanchor='center',
+                x=annotation.x
             )
 
         # Update all axes for minimal, modern style
@@ -423,20 +423,20 @@ class DRIPCalculator:
 
         col4, col5 = st.columns(2)
         with col4:
+            frequency = st.selectbox(
+                "Payment Frequency",
+                options=[1, 4],
+                format_func=lambda x: "Annually" if x == 1 else "Quarterly",
+                key="drip_frequency"
+            )
+
+        with col5:
             years = st.slider(
                 "Projection Period (years)",
                 min_value=0,
                 max_value=30,
                 value=20,
                 key="drip_years"
-            )
-
-        with col5:
-            frequency = st.selectbox(
-                "Payment Frequency",
-                options=[1, 4],
-                format_func=lambda x: "Annually" if x == 1 else "Quarterly",
-                key="drip_frequency"
             )
 
         # Calculate DRIP
