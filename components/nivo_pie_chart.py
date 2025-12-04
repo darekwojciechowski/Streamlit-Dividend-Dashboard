@@ -3,7 +3,7 @@ import streamlit as st
 from streamlit_elements import elements, mui
 from streamlit_elements import nivo
 import random
-from styles.colors_and_styles import rgb_to_hex
+from utils.color_manager import rgb_to_hex
 
 
 class NivoPieChart:
