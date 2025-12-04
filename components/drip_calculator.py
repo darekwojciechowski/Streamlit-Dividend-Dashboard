@@ -308,19 +308,19 @@ class DRIPCalculator:
                 'label': 'DRIP Advantage',
                 'value': f'+{drip_advantage:.0f}%',
                 'delta': f'{currency}{final["DRIP Benefit"]:,.0f} extra',
-                'gradient': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
+                'gradient': 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
             },
             {
                 'label': 'Shares Gained',
                 'value': f'{total_shares_gained:.0f}',
                 'delta': f'{(total_shares_gained/initial["Shares"]*100):.0f}% increase',
-                'gradient': 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+                'gradient': 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)'
             },
             {
                 'label': 'Total Dividends',
                 'value': f'{currency}{total_dividends:,.0f}',
                 'delta': f'{len(df)} years projected',
-                'gradient': 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
+                'gradient': 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
             }
         ]
 
@@ -347,18 +347,15 @@ class DRIPCalculator:
         st.caption(
             "Simulate dividend reinvestment and watch your wealth compound")
 
-        available_tickers = sorted(filtered_df["Ticker"].unique())
-        if not available_tickers:
-            st.warning("No tickers available for DRIP calculation.")
-            return
-
         col1, col2, col3 = st.columns(3)
 
         with col1:
-            selected_ticker = st.selectbox(
+            selected_ticker = st.text_input(
                 "Select Ticker",
-                available_tickers,
-                key="drip_ticker"
+                value="",
+                placeholder="Enter ticker symbol (e.g., AAPL.US)",
+                key="drip_ticker",
+                help="Enter any ticker symbol (e.g., AAPL.US, MSFT.US)"
             )
 
             initial_shares = st.number_input(
