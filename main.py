@@ -5,6 +5,7 @@ import plotly.express as px
 
 from data_processor import DividendDataProcessor
 from components.nivo_pie_chart import NivoPieChart
+from components.drip_calculator import DRIPCalculator
 from utils.color_manager import ColorManager
 from utils.dividend_calculator import DividendCalculator
 from styles.colors_and_styles import CSS_STYLES
@@ -92,6 +93,7 @@ class DividendApp:
         self._render_portfolio_overview()
         self._render_dividend_analysis()
         self._render_calculator()
+        self._render_drip_calculator()
 
     def _render_portfolio_overview(self) -> None:
         """Render portfolio overview with share metrics."""
@@ -138,7 +140,6 @@ class DividendApp:
 
     def _render_calculator(self) -> None:
         """Render dividend growth calculator."""
-        st.markdown("---")
         st.header("Dividend Growth Calculator")
         st.caption("Project future dividend income based on growth assumptions.")
 
@@ -277,6 +278,11 @@ class DividendApp:
         )
 
         st.plotly_chart(fig, use_container_width=True)
+
+    def _render_drip_calculator(self) -> None:
+        """Render modern DRIP calculator."""
+        drip_calc = DRIPCalculator(self.color_manager.ticker_colors)
+        drip_calc.render(self.filtered_df, self.color_manager.ticker_colors)
 
 
 def main() -> None:
