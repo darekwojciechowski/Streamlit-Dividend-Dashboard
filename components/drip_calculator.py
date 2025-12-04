@@ -33,9 +33,9 @@ class DRIPCalculator:
         if len(hex_color) == 3:
             hex_color = ''.join([c*2 for c in hex_color])
 
-        # Default to blue if invalid
+        # Default to purple if invalid
         if len(hex_color) != 6:
-            hex_color = '3b82f6'
+            hex_color = '8A2BE2'
 
         try:
             r = int(hex_color[0:2], 16)
@@ -43,7 +43,7 @@ class DRIPCalculator:
             b = int(hex_color[4:6], 16)
             return f'rgba({r}, {g}, {b}, {alpha})'
         except ValueError:
-            return f'rgba(59, 130, 246, {alpha})'  # Default blue
+            return f'rgba(138, 43, 226, {alpha})'  # Default purple
 
     def calculate_drip(
         self,
@@ -135,11 +135,11 @@ class DRIPCalculator:
             horizontal_spacing=0.1
         )
 
-        color = self.ticker_colors.get(ticker, "#3b82f6")
+        color = self.ticker_colors.get(ticker, "#8A2BE2")
 
-        # Convert color to rgba for fills
-        fill_color = self.hex_to_rgba(color, 0.2)
-        fill_color_strong = self.hex_to_rgba(color, 0.3)
+        # Convert color to rgba for fills (WCAG compliant alpha values)
+        fill_color = self.hex_to_rgba(color, 0.5)
+        fill_color_strong = self.hex_to_rgba(color, 0.6)
 
         # 1. Portfolio Value Growth (with gradient fill)
         fig.add_trace(
@@ -163,7 +163,8 @@ class DRIPCalculator:
                 y=df['Value Without DRIP'],
                 name='Without DRIP',
                 mode='lines',
-                line=dict(color='#94a3b8', width=2, dash='dash'),
+                line=dict(color=self.hex_to_rgba(
+                    color, 0.6), width=2, dash='dash'),
                 hovertemplate=f'<b>Year: %{{x}}</b><br>Value: {currency}%{{y:,.2f}}<extra></extra>'
             ),
             row=1, col=2
@@ -191,7 +192,7 @@ class DRIPCalculator:
                 name='Total Shares',
                 marker=dict(
                     color=df['Shares'],
-                    colorscale=[[0, self.hex_to_rgba(color, 0.4)], [1, color]],
+                    colorscale=[[0, self.hex_to_rgba(color, 0.6)], [1, color]],
                     showscale=False
                 ),
                 hovertemplate='<b>Year: %{x}</b><br>Shares: %{y:.2f}<extra></extra>'
@@ -206,9 +207,9 @@ class DRIPCalculator:
                 y=df['Total Dividend Income'],
                 name='Dividend Income',
                 mode='lines',
-                line=dict(color='#10b981', width=3),
+                line=dict(color=color, width=3),
                 fill='tozeroy',
-                fillcolor='rgba(16, 185, 129, 0.2)',
+                fillcolor=fill_color,
                 hovertemplate=f'<b>Year: %{{x}}</b><br>Income: {currency}%{{y:,.2f}}<extra></extra>'
             ),
             row=2, col=2
@@ -221,23 +222,40 @@ class DRIPCalculator:
             hovermode='x unified',
             plot_bgcolor='rgba(0,0,0,0)',
             paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(family='Inter, system-ui, sans-serif', size=12),
-            margin=dict(t=60, l=20, r=20, b=20)
+            font=dict(family='Inter, system-ui, sans-serif',
+                      size=12, color='#e5e7eb'),
+            margin=dict(t=70, l=40, r=40, b=40),
+            hoverlabel=dict(
+                bgcolor='rgba(30, 30, 30, 0.95)',
+                font_size=13,
+                font_family='Inter, system-ui, sans-serif',
+                font_color='#e5e7eb',
+                bordercolor='rgba(148, 163, 184, 0.3)'
+            )
         )
+
+        # Update subplot titles with modern styling
+        for annotation in fig.layout.annotations:
+            annotation.update(
+                font=dict(size=15, color='#f3f4f6',
+                          family='Inter, system-ui, sans-serif', weight=600),
+                xanchor='left',
+                x=annotation.x - 0.05
+            )
 
         # Update all axes for minimal, modern style
         fig.update_xaxes(
-            showgrid=True,
-            gridwidth=1,
-            gridcolor='rgba(148, 163, 184, 0.1)',
-            showline=False
+            showgrid=False,
+            showline=False,
+            tickfont=dict(size=11, color='#9ca3af'),
+            zeroline=False
         )
 
         fig.update_yaxes(
-            showgrid=True,
-            gridwidth=1,
-            gridcolor='rgba(148, 163, 184, 0.1)',
-            showline=False
+            showgrid=False,
+            showline=False,
+            tickfont=dict(size=11, color='#9ca3af'),
+            zeroline=False
         )
 
         st.plotly_chart(fig, use_container_width=True)
@@ -308,19 +326,19 @@ class DRIPCalculator:
                 'label': 'DRIP Advantage',
                 'value': f'+{drip_advantage:.0f}%',
                 'delta': f'{currency}{final["DRIP Benefit"]:,.0f} extra',
-                'gradient': 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
+                'gradient': 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)'
             },
             {
                 'label': 'Shares Gained',
                 'value': f'{total_shares_gained:.0f}',
                 'delta': f'{(total_shares_gained/initial["Shares"]*100):.0f}% increase',
-                'gradient': 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)'
+                'gradient': 'linear-gradient(135deg, #0575e6 0%, #021b79 100%)'
             },
             {
                 'label': 'Total Dividends',
                 'value': f'{currency}{total_dividends:,.0f}',
                 'delta': f'{len(df)} years projected',
-                'gradient': 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
+                'gradient': 'linear-gradient(135deg, #56ab2f 0%, #a8e063 100%)'
             }
         ]
 
