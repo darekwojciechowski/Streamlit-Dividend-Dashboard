@@ -278,6 +278,10 @@ class DRIPCalculator:
         total_shares_gained = final['Shares'] - initial['Shares']
         total_dividends = df['Total Dividend Income'].sum()
 
+        # Format return values with proper sign handling
+        total_return_formatted = f"{total_return:+.0f}%" if total_return != 0 else "0%"
+        drip_advantage_formatted = f"{drip_advantage:+.0f}%" if drip_advantage != 0 else "0%"
+
         # Custom CSS for modern cards
         st.markdown("""
         <style>
@@ -318,13 +322,13 @@ class DRIPCalculator:
         metrics = [
             {
                 'label': 'Total Return',
-                'value': f'{total_return:.0f}%',
+                'value': total_return_formatted,
                 'delta': f'{currency}{final["Portfolio Value"]:,.0f}',
                 'gradient': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
             },
             {
                 'label': 'DRIP Advantage',
-                'value': f'+{drip_advantage:.0f}%',
+                'value': drip_advantage_formatted,
                 'delta': f'{currency}{final["DRIP Benefit"]:,.0f} extra',
                 'gradient': 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)'
             },

@@ -51,11 +51,13 @@ poetry env activate
 
 ## Step 5: Run Your Project
 
-With the virtual environment activated, you can run your Python scripts as usual. For example:
+**IMPORTANT:** Always use `poetry run` to ensure you're using the correct environment with all dependencies:
 
 ```bash
-streamlit run main.py
+poetry run streamlit run main.py
 ```
+
+**Do NOT use** `streamlit run main.py` directly - it will use your global Python installation instead of Poetry's environment!
 
 ## Additional Poetry Commands
 
