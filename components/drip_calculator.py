@@ -73,30 +73,50 @@ class DRIPCalculator:
         current_annual_div = annual_dividend
 
         for year in range(years + 1):
-            # Calculate values for this year
+            # Store shares at the beginning of the year (before reinvestment)
+            shares_start_of_year = current_shares
+            price_start_of_year = current_price
+
+            # Calculate dividend income based on shares at START of year
+            total_dividend = shares_start_of_year * current_annual_div
             dividend_per_payment = current_annual_div / payment_frequency
-            total_dividend = current_shares * current_annual_div
 
             # Reinvest dividends throughout the year
             shares_added = 0
-            for _ in range(payment_frequency):
-                payment = current_shares * dividend_per_payment
-                new_shares = payment / current_price
+            temp_shares = shares_start_of_year
+
+            for payment_num in range(payment_frequency):
+                # Calculate price at this payment point (linear interpolation through the year)
+                price_fraction = (payment_num + 0.5) / \
+                    payment_frequency  # Mid-point of period
+                price_growth_factor = (1 + share_price_growth / 100)
+                price_at_payment = max(
+                    price_start_of_year * (price_growth_factor ** price_fraction), 0.01)
+
+                payment = temp_shares * dividend_per_payment
+                new_shares = payment / price_at_payment
                 shares_added += new_shares
-                current_shares += new_shares
+                temp_shares += new_shares
 
-            # Portfolio value
-            portfolio_value = current_shares * current_price
+            # Update current shares after all reinvestments
+            current_shares = temp_shares
 
-            # Calculate what value would be without DRIP
-            value_without_drip = initial_shares * current_price
+            # Price at END of year (after full year's growth)
+            price_end_of_year = max(
+                price_start_of_year * (1 + share_price_growth / 100), 0.01)
+
+            # Portfolio value at END of year (after reinvestment, at end-of-year price)
+            portfolio_value = current_shares * price_end_of_year
+
+            # Calculate what value would be without DRIP (at end-of-year price)
+            value_without_drip = initial_shares * price_end_of_year
             drip_benefit = portfolio_value - value_without_drip
 
             results.append({
                 'Year': pd.Timestamp.now().year + year,
                 'Shares': current_shares,
                 'Shares Added': shares_added,
-                'Share Price': current_price,
+                'Share Price': price_end_of_year,
                 'Annual Dividend': current_annual_div,
                 'Total Dividend Income': total_dividend,
                 'Portfolio Value': portfolio_value,
@@ -105,7 +125,7 @@ class DRIPCalculator:
             })
 
             # Update for next year
-            current_price *= (1 + share_price_growth / 100)
+            current_price = price_end_of_year
             current_annual_div *= (1 + dividend_growth / 100)
 
         return pd.DataFrame(results)
@@ -271,12 +291,14 @@ class DRIPCalculator:
         final = df.iloc[-1]
 
         # Calculate key metrics
-        total_return = ((final['Portfolio Value'] - initial['Portfolio Value']) /
-                        initial['Portfolio Value'] * 100)
+        initial_investment = initial['Portfolio Value']
+        total_return = ((final['Portfolio Value'] - initial_investment) /
+                        initial_investment * 100)
         drip_advantage = ((final['Portfolio Value'] - final['Value Without DRIP']) /
                           final['Value Without DRIP'] * 100)
         total_shares_gained = final['Shares'] - initial['Shares']
-        total_dividends = df['Total Dividend Income'].sum()
+        # Sum dividends excluding the first year (which is year 0)
+        total_dividends = df.iloc[1:]['Total Dividend Income'].sum()
 
         # Format return values with proper sign handling
         total_return_formatted = f"{total_return:+.0f}%" if total_return != 0 else "0%"
@@ -419,7 +441,7 @@ class DRIPCalculator:
 
             share_price_growth = st.slider(
                 "Share Price Growth (%/year)",
-                min_value=-10,
+                min_value=0,
                 max_value=30,
                 value=8,
                 key="drip_price_growth"
