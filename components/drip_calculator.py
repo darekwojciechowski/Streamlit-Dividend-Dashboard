@@ -77,12 +77,12 @@ class DRIPCalculator:
             shares_start_of_year = current_shares
             price_start_of_year = current_price
 
-            # Calculate dividend income based on shares at START of year
-            total_dividend = shares_start_of_year * current_annual_div
+            # Calculate dividend per payment
             dividend_per_payment = current_annual_div / payment_frequency
 
             # Reinvest dividends throughout the year
             shares_added = 0
+            total_dividend = 0
             temp_shares = shares_start_of_year
 
             for payment_num in range(payment_frequency):
@@ -93,7 +93,10 @@ class DRIPCalculator:
                 price_at_payment = max(
                     price_start_of_year * (price_growth_factor ** price_fraction), 0.01)
 
+                # Calculate dividend payment based on current shares (including previously reinvested)
                 payment = temp_shares * dividend_per_payment
+                total_dividend += payment
+
                 new_shares = payment / price_at_payment
                 shares_added += new_shares
                 temp_shares += new_shares
@@ -297,8 +300,8 @@ class DRIPCalculator:
         drip_advantage = ((final['Portfolio Value'] - final['Value Without DRIP']) /
                           final['Value Without DRIP'] * 100)
         total_shares_gained = final['Shares'] - initial['Shares']
-        # Sum dividends excluding the first year (which is year 0)
-        total_dividends = df.iloc[1:]['Total Dividend Income'].sum()
+        # Sum all dividend income across all years
+        total_dividends = df['Total Dividend Income'].sum()
 
         # Format return values with proper sign handling
         total_return_formatted = f"{total_return:+.0f}%" if total_return != 0 else "0%"
