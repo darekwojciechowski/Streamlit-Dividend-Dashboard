@@ -130,12 +130,15 @@ CSS_STYLES = """
     }
     
     .metric-label {
-        font-size: var(--text-sm);
-        line-height: var(--leading-normal);
+        font-size: var(--text-xs);
+        line-height: var(--leading-tight);
         font-weight: var(--font-medium);
         opacity: 0.9;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.03em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     
     .metric-delta {

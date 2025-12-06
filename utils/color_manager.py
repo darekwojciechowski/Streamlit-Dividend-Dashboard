@@ -126,6 +126,7 @@ class ColorManager:
 
     def __init__(self):
         self.ticker_colors = {}
+        self.used_colors = []  # Track used colors to avoid duplicates
 
     def generate_colors_for_tickers(self, tickers: list) -> dict:
         """Generate consistent colors for a list of tickers."""
@@ -139,11 +140,30 @@ class ColorManager:
             ticker: color_palette[i % len(color_palette)]
             for i, ticker in enumerate(unique_tickers)
         }
+
+        # Reset used colors when tickers change
+        self.used_colors = []
+
         return self.ticker_colors
 
     def get_random_base_color(self) -> str:
-        """Get a random color from base colors."""
-        return random.choice(BASE_COLORS) if BASE_COLORS else "#636EFA"
+        """Get a random color from base colors without repetition."""
+        if not BASE_COLORS:
+            return "#636EFA"
+
+        # If all colors have been used, reset the list
+        if len(self.used_colors) >= len(BASE_COLORS):
+            self.used_colors = []
+
+        # Get available colors
+        available_colors = [
+            c for c in BASE_COLORS if c not in self.used_colors]
+
+        # Pick a random color from available ones
+        color = random.choice(available_colors)
+        self.used_colors.append(color)
+
+        return color
 
     def create_tile_html(self, ticker: str, shares: float) -> str:
         """Create HTML for a metric tile."""
