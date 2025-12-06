@@ -5,6 +5,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from typing import Dict, List
+from styles.colors_and_styles import CSS_STYLES
 
 
 class DRIPCalculator:
@@ -307,40 +308,8 @@ class DRIPCalculator:
         total_return_formatted = f"{total_return:+.0f}%" if total_return != 0 else "0%"
         drip_advantage_formatted = f"{drip_advantage:+.0f}%" if drip_advantage != 0 else "0%"
 
-        # Custom CSS for modern cards
-        st.markdown("""
-        <style>
-        .metric-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 16px;
-            padding: 24px;
-            color: white;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
-        }
-        .metric-card:hover {
-            transform: translateY(-5px);
-        }
-        .metric-value {
-            font-size: 2rem;
-            font-weight: 700;
-            margin: 8px 0;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            word-wrap: break-word;
-        }
-        .metric-label {
-            font-size: 0.875rem;
-            opacity: 0.9;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .metric-delta {
-            font-size: 1rem;
-            margin-top: 8px;
-            opacity: 0.95;
-        }
-        </style>
-        """, unsafe_allow_html=True)
+        # Use CSS styles from colors_and_styles module
+        st.markdown(CSS_STYLES, unsafe_allow_html=True)
 
         cols = st.columns(4)
 
@@ -408,7 +377,7 @@ class DRIPCalculator:
             initial_shares = st.number_input(
                 "Initial Shares",
                 min_value=1,
-                value=100,
+                value=25,
                 step=1,
                 format="%d",
                 key="drip_shares"

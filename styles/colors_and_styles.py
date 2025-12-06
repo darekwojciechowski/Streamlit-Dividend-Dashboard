@@ -104,5 +104,55 @@ CSS_STYLES = """
     .gradient-tile {
         min-height: 120px;
     }
+    
+    /* DRIP Calculator Metric Cards */
+    .metric-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        padding: 24px;
+        color: white;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+        min-height: 120px;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .metric-value {
+        font-size: var(--text-2xl);
+        font-weight: var(--font-bold);
+        margin: 8px 0;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        word-wrap: break-word;
+        line-height: var(--leading-tight);
+    }
+    
+    .metric-label {
+        font-size: var(--text-sm);
+        line-height: var(--leading-normal);
+        font-weight: var(--font-medium);
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .metric-delta {
+        font-size: var(--text-base);
+        line-height: var(--leading-normal);
+        margin-top: 8px;
+        opacity: 0.95;
+    }
+    
+    /* Respect reduced motion preference for metric cards */
+    @media (prefers-reduced-motion: reduce) {
+        .metric-card {
+            transition: none !important;
+        }
+        .metric-card:hover {
+            transform: none !important;
+        }
+    }
 </style>
 """
