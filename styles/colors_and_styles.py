@@ -121,12 +121,14 @@ CSS_STYLES = """
     }
     
     .metric-value {
-        font-size: var(--text-2xl);
+        font-size: clamp(1.25rem, 1.1rem + 0.75vw, 1.75rem);
         font-weight: var(--font-bold);
         margin: 8px 0;
         text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         word-wrap: break-word;
+        word-break: break-word;
         line-height: var(--leading-tight);
+        overflow-wrap: break-word;
     }
     
     .metric-label {

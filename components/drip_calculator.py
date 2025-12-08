@@ -335,7 +335,7 @@ class DRIPCalculator:
             {
                 'label': 'Total Dividends',
                 'value': f'{currency}{total_dividends:,.0f}',
-                'delta': f'{len(df)} years projected',
+                'delta': f'{len(df) - 1} years projected',
                 'gradient': 'linear-gradient(135deg, #56ab2f 0%, #a8e063 100%)'
             }
         ]
@@ -369,9 +369,9 @@ class DRIPCalculator:
             selected_ticker = st.text_input(
                 "Select Ticker",
                 value="",
-                placeholder="Enter ticker symbol (e.g., AAPL.US)",
+                placeholder="Enter ticker symbol (e.g., KO)",
                 key="drip_ticker",
-                help="Enter any ticker symbol (e.g., AAPL.US, MSFT.US)"
+                help="Enter any ticker symbol (e.g., KO)"
             )
 
             initial_shares = st.number_input(
@@ -396,7 +396,7 @@ class DRIPCalculator:
             annual_dividend = st.number_input(
                 "Annual Dividend/Share ($)",
                 min_value=0,
-                value=4,
+                value=3,
                 step=1,
                 format="%d",
                 key="drip_dividend"
@@ -407,15 +407,15 @@ class DRIPCalculator:
                 "Dividend Growth (%/year)",
                 min_value=0,
                 max_value=20,
-                value=5,
+                value=6,
                 key="drip_div_growth"
             )
 
             share_price_growth = st.slider(
                 "Share Price Growth (%/year)",
                 min_value=0,
-                max_value=30,
-                value=8,
+                max_value=20,
+                value=4,
                 key="drip_price_growth"
             )
 
@@ -433,7 +433,7 @@ class DRIPCalculator:
                 "Projection Period (years)",
                 min_value=0,
                 max_value=30,
-                value=20,
+                value=15,
                 key="drip_years"
             )
 
