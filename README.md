@@ -1,29 +1,54 @@
-# 📊 Streamlit Dividend Dashboard
+# Streamlit Dividend Dashboard
 
-An interactive Streamlit dashboard for analyzing dividend data and projecting future growth.
+![Python](https://img.shields.io/badge/Python-3.12-blue?style=flat-square)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.40-FF4B4B?style=flat-square)
+![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
-➡️ [Access the Live Dashboard](https://app-dividend-dashboard-mvywmc9s2qdpkgfdgsccsa.streamlit.app/)
+Interactive dashboard for analyzing stock dividend portfolios and projecting future growth. Built with `Streamlit`, `Pandas`, and `Plotly`, this application demonstrates modern data visualization techniques and financial modeling in Python.
 
-## 🎥 Demo
+➡️ **[Live Dashboard](https://app-dividend-dashboard-mvywmc9s2qdpkgfdgsccsa.streamlit.app/)**
+
+
+## Preview
+
 ![Dashboard Demo](assets/streamlit-dashboard-demo.gif)
 
-## ✨ Key Features
+## Project Overview
 
-### 📈 Data Visualization
-- Real-time filtering of tickers
-- Interactive metrics tiles with gradient effects
-- Comparative bar charts and pie visualizations
-- Responsive design for all screen sizes
+This project serves as a comprehensive tool for dividend investors to track their portfolio performance and forecast future returns. It was designed to showcase proficiency in:
 
-### 🧮 Growth Forecasting
-- Multi-year dividend projections
-- Customizable growth parameters
+- **Full-stack Python Development**: From data processing to frontend visualization.
+- **Data Engineering**: Cleaning, transforming, and aggregating raw financial data.
+- **UI/UX Design**: Creating a responsive, dark-mode optimized interface with custom CSS.
+- **Financial Modeling**: Implementing DRIP (Dividend Reinvestment Plan) calculators and growth projections.
 
-### ⚙️ Data Processing
-- Automated CSV data ingestion
-- Dynamic data aggregation
-- Intelligent color mapping
-- Data validation and cleaning
+## Key Features
 
-## 📄 License
-Distributed under MIT License. See `LICENSE` for more information.
+### Advanced Visualization
+- **Interactive Metrics**: Real-time KPI tiles with gradient styling for quick portfolio health checks.
+- **Dynamic Charts**: Plotly-powered bar charts and Nivo pie charts for asset allocation analysis.
+- **Responsive Design**: Optimized layout that adapts to various screen sizes.
+
+### Financial Forecasting
+- **DRIP Calculator**: Simulate the compound effect of reinvesting dividends over time.
+- **Growth Projections**: Customizable parameters (years, growth rate) to model future income scenarios.
+
+### Robust Data Processing
+- **Automated Ingestion**: Seamlessly handles CSV data imports.
+- **Data Validation**: Ensures data integrity with type checking and error handling.
+- **Smart Aggregation**: Dynamic grouping of tickers and sectors.
+
+## Tech Stack
+
+- **Core**: `Python 3.12`
+- **Web Framework**: `Streamlit`
+- **Data Manipulation**: `Pandas`, `NumPy`
+- **Visualization**: `Plotly Express`, `Streamlit Elements`
+- **Dependency Management**: `Poetry`
+
+## System Architecture
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://mermaid.ink/svg/JSV7aW5pdDogeyd0aGVtZSc6ICdkYXJrJywgJ3RoZW1lVmFyaWFibGVzJzogeyAncHJpbWFyeUNvbG9yJzogJyMxZjI5MzcnLCAnbWFpbkJrZyc6ICcjMWYyOTM3JywgJ2NsdXN0ZXJCa2cnOiAnIzExMTgyNycsICdjbHVzdGVyQm9yZGVyJzogJyMzNzQxNTEnLCAnbGluZUNvbG9yJzogJyM5Y2EzYWYnLCAnZm9udEZhbWlseSc6ICdJbnRlciwgc2Fucy1zZXJpZicsICdlZGdlTGFiZWxCYWNrZ3JvdW5kJzogJyMxMTE4MjcnIH19fSUlCmdyYXBoIExSCiAgICBzdWJncmFwaCBEYXRhIFsiJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A78J-SviBEYXRhIExheWVyJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Il0KICAgICAgICBkaXJlY3Rpb24gVEIKICAgICAgICBBW0NTViBTb3VyY2VdOjo6ZGF0YQogICAgZW5kCgogICAgc3ViZ3JhcGggTG9naWMgWyImbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDvimpnvuI8gUHJvY2Vzc2luZyBDb3JlJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Il0KICAgICAgICBkaXJlY3Rpb24gVEIKICAgICAgICBCKERhdGEgUHJvY2Vzc29yKTo6OnByb2MKICAgICAgICBDe1BhbmRhcyBERn06Ojpwcm9jCiAgICAgICAgRFtNZXRyaWNzIEVuZ2luZV06Ojpwcm9jCiAgICAgICAgSFtEUklQIE1vZGVsXTo6OnByb2MKICAgIGVuZAoKICAgIHN1YmdyYXBoIFVJIFsiJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A78J-Wpe-4jyBQcmVzZW50YXRpb24mbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsiXQogICAgICAgIGRpcmVjdGlvbiBUQgogICAgICAgIEdbVXNlciBDb25maWddOjo6dWkKICAgICAgICBFW1Zpc3VhbGl6YXRpb25zXTo6OnVpCiAgICAgICAgRltTdHJlYW1saXQgQXBwXTo6OnVpCiAgICBlbmQKCiAgICBBIC0tPnxJbmdlc3R8IEIKICAgIEIgLS0-fENsZWFufCBDCiAgICBDIC0tPnxBZ2d8IEQKICAgIEMgLS0-fEZpbHRlcnwgRQogICAgRyAtLi0-fFBhcmFtc3wgSAogICAgSCAtLT58Rm9yZWNhc3R8IEYKICAgIEQgLS0-fEtQSXN8IEYKICAgIEUgLS0-fFJlbmRlcnwgRgoKICAgIGNsYXNzRGVmIGRhdGEgZmlsbDojMTcyNTU0LHN0cm9rZTojNjBhNWZhLHN0cm9rZS13aWR0aDoycHgsY29sb3I6I2RiZWFmZSxyeDo4LHJ5Ojg7CiAgICBjbGFzc0RlZiBwcm9jIGZpbGw6IzJlMTA2NSxzdHJva2U6I2E3OGJmYSxzdHJva2Utd2lkdGg6MnB4LGNvbG9yOiNmM2U4ZmYscng6OCxyeTo4OwogICAgY2xhc3NEZWYgdWkgZmlsbDojMDY0ZTNiLHN0cm9rZTojMzRkMzk5LHN0cm9rZS13aWR0aDoycHgsY29sb3I6I2QxZmFlNSxyeDo4LHJ5Ojg7CiAgICBzdHlsZSBEYXRhIGZpbGw6IzExMTgyNyxzdHJva2U6IzM3NDE1MSxzdHJva2Utd2lkdGg6MXB4LHJ4OjEwLHJ5OjEwCiAgICBzdHlsZSBMb2dpYyBmaWxsOiMxMTE4Mjcsc3Ryb2tlOiMzNzQxNTEsc3Ryb2tlLXdpZHRoOjFweCxyeDoxMCxyeToxMAogICAgc3R5bGUgVUkgZmlsbDojMTExODI3LHN0cm9rZTojMzc0MTUxLHN0cm9rZS13aWR0aDoxcHgscng6MTAscnk6MTAK">
+  <img alt="System Architecture" src="https://mermaid.ink/svg/JSV7aW5pdDogeyd0aGVtZSc6ICdiYXNlJywgJ3RoZW1lVmFyaWFibGVzJzogeyAncHJpbWFyeUNvbG9yJzogJyNmZmYnLCAnbWFpbkJrZyc6ICcjZmZmJywgJ2NsdXN0ZXJCa2cnOiAnI2Y5ZmFmYicsICdjbHVzdGVyQm9yZGVyJzogJyNlNWU3ZWInLCAnbGluZUNvbG9yJzogJyM2YjcyODAnLCAnZm9udEZhbWlseSc6ICdJbnRlciwgc2Fucy1zZXJpZicsICdlZGdlTGFiZWxCYWNrZ3JvdW5kJzogJyNmOWZhZmInIH19fSUlCmdyYXBoIExSCiAgICBzdWJncmFwaCBEYXRhIFsiJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A78J-SviBEYXRhIExheWVyJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Il0KICAgICAgICBkaXJlY3Rpb24gVEIKICAgICAgICBBW0NTViBTb3VyY2VdOjo6ZGF0YQogICAgZW5kCgogICAgc3ViZ3JhcGggTG9naWMgWyImbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDvimpnvuI8gUHJvY2Vzc2luZyBDb3JlJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Il0KICAgICAgICBkaXJlY3Rpb24gVEIKICAgICAgICBCKERhdGEgUHJvY2Vzc29yKTo6OnByb2MKICAgICAgICBDe1BhbmRhcyBERn06Ojpwcm9jCiAgICAgICAgRFtNZXRyaWNzIEVuZ2luZV06Ojpwcm9jCiAgICAgICAgSFtEUklQIE1vZGVsXTo6OnByb2MKICAgIGVuZAoKICAgIHN1YmdyYXBoIFVJIFsiJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A78J-Wpe-4jyBQcmVzZW50YXRpb24mbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsiXQogICAgICAgIGRpcmVjdGlvbiBUQgogICAgICAgIEdbVXNlciBDb25maWddOjo6dWkKICAgICAgICBFW1Zpc3VhbGl6YXRpb25zXTo6OnVpCiAgICAgICAgRltTdHJlYW1saXQgQXBwXTo6OnVpCiAgICBlbmQKCiAgICBBIC0tPnxJbmdlc3R8IEIKICAgIEIgLS0-fENsZWFufCBDCiAgICBDIC0tPnxBZ2d8IEQKICAgIEMgLS0-fEZpbHRlcnwgRQogICAgRyAtLi0-fFBhcmFtc3wgSAogICAgSCAtLT58Rm9yZWNhc3R8IEYKICAgIEQgLS0-fEtQSXN8IEYKICAgIEUgLS0-fFJlbmRlcnwgRgoKICAgIGNsYXNzRGVmIGRhdGEgZmlsbDojZWZmNmZmLHN0cm9rZTojM2I4MmY2LHN0cm9rZS13aWR0aDoycHgsY29sb3I6IzFlM2E4YSxyeDo4LHJ5Ojg7CiAgICBjbGFzc0RlZiBwcm9jIGZpbGw6I2Y1ZjNmZixzdHJva2U6IzhiNWNmNixzdHJva2Utd2lkdGg6MnB4LGNvbG9yOiM0YzFkOTUscng6OCxyeTo4OwogICAgY2xhc3NEZWYgdWkgZmlsbDojZWNmZGY1LHN0cm9rZTojMTBiOTgxLHN0cm9rZS13aWR0aDoycHgsY29sb3I6IzA2NGUzYixyeDo4LHJ5Ojg7CiAgICBzdHlsZSBEYXRhIGZpbGw6I2Y5ZmFmYixzdHJva2U6I2U1ZTdlYixzdHJva2Utd2lkdGg6MXB4LHJ4OjEwLHJ5OjEwCiAgICBzdHlsZSBMb2dpYyBmaWxsOiNmOWZhZmIsc3Ryb2tlOiNlNWU3ZWIsc3Ryb2tlLXdpZHRoOjFweCxyeDoxMCxyeToxMAogICAgc3R5bGUgVUkgZmlsbDojZjlmYWZiLHN0cm9rZTojZTVlN2ViLHN0cm9rZS13aWR0aDoxcHgscng6MTAscnk6MTAK">
+</picture>
