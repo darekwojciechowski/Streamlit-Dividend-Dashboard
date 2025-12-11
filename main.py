@@ -118,6 +118,8 @@ class DividendApp:
     def _render_dividend_analysis(self) -> None:
         """Render dividend analysis charts."""
         st.markdown("## Distribution Breakdown")
+        st.caption(
+            "View the distribution of received dividend payments across portfolio")
 
         if "Net Dividend" not in self.filtered_df.columns:
             st.info("No dividend data available.")
@@ -281,6 +283,10 @@ class DividendApp:
 
     def _render_drip_calculator(self) -> None:
         """Render modern DRIP calculator."""
+        st.markdown("## DRIP Calculator")
+        st.caption(
+            "Simulate dividend reinvestment to estimate compound growth over time")
+
         drip_calc = DRIPCalculator(self.color_manager.ticker_colors)
         drip_calc.render(self.filtered_df, self.color_manager.ticker_colors)
 

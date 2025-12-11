@@ -359,10 +359,6 @@ class DRIPCalculator:
     ) -> None:
         """Render complete modern DRIP calculator interface."""
 
-        st.markdown("## DRIP Calculator")
-        st.caption(
-            "Simulate dividend reinvestment and watch your wealth compound")
-
         col1, col2, col3 = st.columns(3)
 
         with col1:
@@ -423,8 +419,14 @@ class DRIPCalculator:
         with col4:
             frequency = st.selectbox(
                 "Payment Frequency",
-                options=[1, 4],
-                format_func=lambda x: "Annually" if x == 1 else "Quarterly",
+                options=[12, 4, 2, 1],
+                format_func=lambda x: {
+                    12: "Monthly",
+                    4: "Quarterly",
+                    2: "Semi-annually",
+                    1: "Annually"
+                }[x],
+                index=1,  # Default to Quarterly
                 key="drip_frequency"
             )
 

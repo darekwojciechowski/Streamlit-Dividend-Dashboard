@@ -1,14 +1,17 @@
 # Streamlit Dividend Dashboard
 
-![Python](https://img.shields.io/badge/Python-3.12-blue?style=flat-square)
-![Streamlit](https://img.shields.io/badge/Streamlit-1.40-FF4B4B?style=flat-square)
-![Pandas](https://img.shields.io/badge/Pandas-2.2-150458?style=flat-square)
+![Python](https://img.shields.io/badge/Python-3.12+-blue?style=flat-square)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.51+-FF4B4B?style=flat-square)
+![Pandas](https://img.shields.io/badge/Pandas-2.2+-150458?style=flat-square)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
 Interactive dashboard for analyzing stock dividend portfolios and projecting future growth. Built with `Streamlit`, `Pandas`, and `Plotly`, this application demonstrates modern data visualization techniques and financial modeling in Python.
 
-➡️ **[Live Dashboard](https://app-dividend-dashboard-mvywmc9s2qdpkgfdgsccsa.streamlit.app/)**
+<div align="center">
+  
+### 🚀 <a href="https://app-dividend-dashboard-mvywmc9s2qdpkgfdgsccsa.streamlit.app/" style="color: #7c3aed; text-decoration: none; font-weight: bold;">View Live Dashboard</a> 🚀
 
+</div>
 
 ## Preview
 
