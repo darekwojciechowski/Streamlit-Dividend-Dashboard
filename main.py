@@ -233,10 +233,11 @@ class DividendApp:
         )
 
         # Mark only the specific years where dividend crosses doubling thresholds (2x, 4x, 8x, etc.)
-        projections['Milestone'] = 'Normal'
+        bar_colors = []
 
         for i in range(len(projections)):
             current_value = projections.iloc[i]['Projected Dividend']
+            is_milestone = False
 
             # Check if this is the first year to cross each doubling threshold
             for multiplier in [2, 4, 8, 16, 32, 64]:
@@ -246,23 +247,23 @@ class DividendApp:
                 if current_value >= threshold:
                     # Check if previous value was below threshold (first crossing)
                     if i == 0 or projections.iloc[i-1]['Projected Dividend'] < threshold:
-                        projections.loc[projections.index[i],
-                                        'Milestone'] = 'Doubled'
+                        bar_colors.append(COLOR_THEME["primary"])
+                        is_milestone = True
                         break
+
+            if not is_milestone:
+                bar_colors.append(chart_color)
 
         fig = px.bar(
             projections,
             x="Year",
             y="Projected Dividend",
-            color="Milestone",
             title=f"Projected Dividends for {self.selected_ticker} "
-            f"(Starting: {currency}{initial_dividend:.2f})",
-            color_discrete_map={
-                'Normal': chart_color,
-                # Use theme color for doubling milestones
-                'Doubled': COLOR_THEME["primary"]
-            },
+            f"(Starting: {currency}{initial_dividend:.2f})"
         )
+
+        # Update bar colors
+        fig.update_traces(marker_color=bar_colors)
 
         # Add trend line
         fig.add_scatter(
