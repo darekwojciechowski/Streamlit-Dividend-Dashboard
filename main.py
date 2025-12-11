@@ -277,7 +277,11 @@ class DividendApp:
             xaxis_title="Year",
             yaxis_title=f"Projected Dividend ({currency})",
             hovermode="x unified",
+            bargap=0.2,
         )
+
+        # Set bar width only for bar traces
+        fig.update_traces(selector=dict(type='bar'), width=0.8)
 
         st.plotly_chart(fig, use_container_width=True)
 
