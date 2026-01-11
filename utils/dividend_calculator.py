@@ -1,7 +1,6 @@
 """Dividend calculator utilities."""
 
 import pandas as pd
-from typing import Optional
 
 
 class DividendCalculator:
@@ -21,7 +20,7 @@ class DividendCalculator:
         return "$"
 
     @staticmethod
-    def get_initial_dividend(ticker_data: pd.DataFrame) -> Optional[float]:
+    def get_initial_dividend(ticker_data: pd.DataFrame) -> float | None:
         """Extract initial dividend from ticker data."""
         if ticker_data.empty or "Net Dividend" not in ticker_data.columns:
             return None

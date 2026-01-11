@@ -125,10 +125,11 @@ class ColorManager:
     """Manages color assignment and generation for tickers."""
 
     def __init__(self):
-        self.ticker_colors = {}
-        self.used_colors = []  # Track used colors to avoid duplicates
+        self.ticker_colors: dict[str, str] = {}
+        # Track used colors to avoid duplicates
+        self.used_colors: list[str] = []
 
-    def generate_colors_for_tickers(self, tickers: list) -> dict:
+    def generate_colors_for_tickers(self, tickers: list[str]) -> dict[str, str]:
         """Generate consistent colors for a list of tickers."""
         if not tickers:
             return {}

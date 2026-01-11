@@ -55,7 +55,7 @@ class DividendDataProcessor:
         if missing:
             raise ValueError(f"Missing required columns: {', '.join(missing)}")
 
-    def filter_data(self, selected_tickers: list) -> pd.DataFrame:
+    def filter_data(self, selected_tickers: list[str]) -> pd.DataFrame:
         """Filter data by selected tickers."""
         if self.df is None or self.df.empty or not selected_tickers:
             return pd.DataFrame()

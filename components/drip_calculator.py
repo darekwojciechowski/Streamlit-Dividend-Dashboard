@@ -4,14 +4,13 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from typing import Dict, List
 from styles.colors_and_styles import CSS_STYLES
 
 
 class DRIPCalculator:
     """Modern DRIP Calculator with advanced visualizations."""
 
-    def __init__(self, ticker_colors: Dict[str, str]):
+    def __init__(self, ticker_colors: dict[str, str]):
         """Initialize DRIP calculator."""
         self.ticker_colors = ticker_colors
 
@@ -355,7 +354,7 @@ class DRIPCalculator:
     def render(
         self,
         filtered_df: pd.DataFrame,
-        ticker_colors: Dict[str, str]
+        ticker_colors: dict[str, str]
     ) -> None:
         """Render complete modern DRIP calculator interface."""
 

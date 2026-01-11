@@ -1,4 +1,3 @@
-from typing import Dict, List, Optional
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -37,8 +36,8 @@ class DividendApp:
 
         # Application state
         self.filtered_df = pd.DataFrame()
-        self.selected_tickers: List[str] = []
-        self.selected_ticker: Optional[str] = None
+        self.selected_tickers: list[str] = []
+        self.selected_ticker: str | None = None
 
     def _load_data(self) -> DividendDataProcessor:
         """Load and initialize data processor."""
