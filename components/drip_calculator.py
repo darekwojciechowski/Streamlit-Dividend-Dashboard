@@ -5,6 +5,8 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from styles.colors_and_styles import CSS_STYLES
+from utils.color_manager import hex_to_rgba
+from utils.dividend_calculator import DividendCalculator
 
 
 class DRIPCalculator:
@@ -13,37 +15,6 @@ class DRIPCalculator:
     def __init__(self, ticker_colors: dict[str, str]):
         """Initialize DRIP calculator."""
         self.ticker_colors = ticker_colors
-
-    @staticmethod
-    def hex_to_rgba(hex_color: str, alpha: float = 1.0) -> str:
-        """
-        Convert hex color to rgba string.
-
-        Args:
-            hex_color: Hex color string (e.g., '#3b82f6')
-            alpha: Alpha transparency (0-1)
-
-        Returns:
-            RGBA color string
-        """
-        # Remove # if present
-        hex_color = hex_color.lstrip('#')
-
-        # Handle short form (e.g., #fff)
-        if len(hex_color) == 3:
-            hex_color = ''.join([c*2 for c in hex_color])
-
-        # Default to purple if invalid
-        if len(hex_color) != 6:
-            hex_color = '8A2BE2'
-
-        try:
-            r = int(hex_color[0:2], 16)
-            g = int(hex_color[2:4], 16)
-            b = int(hex_color[4:6], 16)
-            return f'rgba({r}, {g}, {b}, {alpha})'
-        except ValueError:
-            return f'rgba(138, 43, 226, {alpha})'  # Default purple
 
     def calculate_drip(
         self,
@@ -161,8 +132,8 @@ class DRIPCalculator:
         color = self.ticker_colors.get(ticker, "#8A2BE2")
 
         # Convert color to rgba for fills (WCAG compliant alpha values)
-        fill_color = self.hex_to_rgba(color, 0.5)
-        fill_color_strong = self.hex_to_rgba(color, 0.6)
+        fill_color = hex_to_rgba(color, 0.5)
+        fill_color_strong = hex_to_rgba(color, 0.6)
 
         # 1. Portfolio Value Growth (with gradient fill)
         fig.add_trace(
@@ -186,7 +157,7 @@ class DRIPCalculator:
                 y=df['Value Without DRIP'],
                 name='Without DRIP',
                 mode='lines',
-                line=dict(color=self.hex_to_rgba(
+                line=dict(color=hex_to_rgba(
                     color, 0.6), width=2, dash='dash'),
                 hovertemplate=f'<b>Year: %{{x}}</b><br>Value: {currency}%{{y:,.2f}}<extra></extra>'
             ),
@@ -215,7 +186,7 @@ class DRIPCalculator:
                 name='Total Shares',
                 marker=dict(
                     color=df['Shares'],
-                    colorscale=[[0, self.hex_to_rgba(color, 0.6)], [1, color]],
+                    colorscale=[[0, hex_to_rgba(color, 0.6)], [1, color]],
                     showscale=False
                 ),
                 hovertemplate='<b>Year: %{x}</b><br>Shares: %{y:.2f}<extra></extra>'
@@ -351,11 +322,7 @@ class DRIPCalculator:
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-    def render(
-        self,
-        filtered_df: pd.DataFrame,
-        ticker_colors: dict[str, str]
-    ) -> None:
+    def render(self) -> None:
         """Render complete modern DRIP calculator interface."""
 
         col1, col2, col3 = st.columns(3)
@@ -450,10 +417,7 @@ class DRIPCalculator:
         )
 
         # Get currency
-        currency = "$"
-        if "." in selected_ticker:
-            country_code = selected_ticker.split(".")[-1]
-            currency = "PLN" if country_code == "PL" else "$"
+        currency = DividendCalculator.get_currency_symbol(selected_ticker)
 
         # Render metrics cards
         self.render_metrics_cards(df, currency)

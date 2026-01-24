@@ -100,6 +100,37 @@ def determine_text_color_for_dropdown(bg_color: str) -> str:
     return "#000000" if apply_wcag_ui_standards(bg_color) else "#FFFFFF"
 
 
+def hex_to_rgba(hex_color: str, alpha: float = 1.0) -> str:
+    """
+    Convert hex color to rgba string.
+
+    Args:
+        hex_color: Hex color string (e.g., '#3b82f6')
+        alpha: Alpha transparency (0-1)
+
+    Returns:
+        RGBA color string
+    """
+    # Remove # if present
+    hex_color = hex_color.lstrip('#')
+
+    # Handle short form (e.g., #fff)
+    if len(hex_color) == 3:
+        hex_color = ''.join([c*2 for c in hex_color])
+
+    # Default to purple if invalid
+    if len(hex_color) != 6:
+        hex_color = '8A2BE2'
+
+    try:
+        r = int(hex_color[0:2], 16)
+        g = int(hex_color[2:4], 16)
+        b = int(hex_color[4:6], 16)
+        return f'rgba({r}, {g}, {b}, {alpha})'
+    except ValueError:
+        return f'rgba(138, 43, 226, {alpha})'  # Default purple
+
+
 def rgb_to_hex(rgb_color: str) -> str:
     """
     Converts an RGB color string (e.g., 'rgb(102, 197, 204)') to a hex color string (e.g., '#66C5CC').

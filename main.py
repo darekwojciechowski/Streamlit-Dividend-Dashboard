@@ -231,27 +231,20 @@ class DividendApp:
             self.selected_ticker, COLOR_THEME["fallback"]
         )
 
-        # Mark only the specific years where dividend crosses doubling thresholds (2x, 4x, 8x, etc.)
+        # Mark years where dividend crosses doubling thresholds (2x, 4x, 8x, etc.)
         bar_colors = []
+        multipliers = [2, 4, 8, 16, 32, 64]
+        prev_value = 0
 
-        for i in range(len(projections)):
-            current_value = projections.iloc[i]['Projected Dividend']
-            is_milestone = False
-
-            # Check if this is the first year to cross each doubling threshold
-            for multiplier in [2, 4, 8, 16, 32, 64]:
-                threshold = initial_dividend * multiplier
-
-                # Check if current value crosses threshold
-                if current_value >= threshold:
-                    # Check if previous value was below threshold (first crossing)
-                    if i == 0 or projections.iloc[i-1]['Projected Dividend'] < threshold:
-                        bar_colors.append(COLOR_THEME["primary"])
-                        is_milestone = True
-                        break
-
-            if not is_milestone:
-                bar_colors.append(chart_color)
+        for current_value in projections['Projected Dividend']:
+            # Check if we crossed any threshold between prev and current value
+            is_milestone = any(
+                prev_value < initial_dividend * m <= current_value
+                for m in multipliers
+            )
+            bar_colors.append(
+                COLOR_THEME["primary"] if is_milestone else chart_color)
+            prev_value = current_value
 
         fig = px.bar(
             projections,
@@ -292,7 +285,7 @@ class DividendApp:
             "Simulate dividend reinvestment to estimate compound growth over time")
 
         drip_calc = DRIPCalculator(self.color_manager.ticker_colors)
-        drip_calc.render(self.filtered_df, self.color_manager.ticker_colors)
+        drip_calc.render()
 
 
 def main() -> None:
