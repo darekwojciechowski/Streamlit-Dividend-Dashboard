@@ -164,5 +164,9 @@ cython_debug/
 *.sublime-workspace
 .DS_Store
 
+# GitHub Copilot agents and documentation
+.github/agents/
+.github/README.md
+
 # Qodo
 .qodo
