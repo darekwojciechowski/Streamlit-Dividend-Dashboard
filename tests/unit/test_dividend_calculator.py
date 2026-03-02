@@ -86,13 +86,23 @@ class TestCurrencySymbolInference:
     @pytest.mark.parametrize(
         "ticker,expected_currency,country",
         [
-            (TICKER_US, CURRENCY_USD, "US"),
-            ("MSFT.US", CURRENCY_USD, "US (Microsoft)"),
-            (TICKER_POLAND, CURRENCY_PLN, "PL (Poland)"),
-            (TICKER_EUROPE, CURRENCY_EUR, "EU (Europe)"),
-            ("ORANGE.EU", CURRENCY_EUR, "EU (Europe)"),
-            (TICKER_UNKNOWN, CURRENCY_USD, "Unknown code - default to USD"),
-            (TICKER_NO_SUFFIX, CURRENCY_USD, "No suffix - default to USD"),
+            pytest.param(TICKER_US, CURRENCY_USD, "US", id="us-aapl"),
+            pytest.param("MSFT.US", CURRENCY_USD, "US (Microsoft)", id="us-msft"),
+            pytest.param(TICKER_POLAND, CURRENCY_PLN, "PL (Poland)", id="pln-pko"),
+            pytest.param(TICKER_EUROPE, CURRENCY_EUR, "EU (Europe)", id="eur-sap"),
+            pytest.param("ORANGE.EU", CURRENCY_EUR, "EU (Europe)", id="eur-orange"),
+            pytest.param(
+                TICKER_UNKNOWN,
+                CURRENCY_USD,
+                "Unknown code - default to USD",
+                id="unknown-default-usd",
+            ),
+            pytest.param(
+                TICKER_NO_SUFFIX,
+                CURRENCY_USD,
+                "No suffix - default to USD",
+                id="no-suffix-default-usd",
+            ),
         ],
     )
     def test_currency_symbol_by_ticker_suffix(
@@ -109,7 +119,9 @@ class TestCurrencySymbolInference:
         result = DividendCalculator.get_currency_symbol(ticker)
 
         # Assert
-        assert result == expected_currency, f"Failed for {country}: {ticker}"
+        assert (
+            result == expected_currency
+        ), f"Failed for {country}: {ticker} - expected {expected_currency}, got {result}"
 
     def test_get_currency_symbol_callable_as_static_method(self) -> None:
         """Test that get_currency_symbol is truly static (no instance needed).
@@ -146,7 +158,9 @@ class TestInitialDividendExtraction:
         result = DividendCalculator.get_initial_dividend(ticker_data)
 
         # Assert
-        assert result == INITIAL_DIVIDEND_100
+        assert (
+            result == INITIAL_DIVIDEND_100
+        ), f"Should extract first dividend value, got {result}"
 
     def test_extract_returns_none_for_empty_dataframe(self) -> None:
         """Test extraction returns None when DataFrame is empty."""
@@ -337,9 +351,23 @@ class TestDividendProjections:
     @pytest.mark.parametrize(
         "initial,growth,years,description",
         [
-            (INITIAL_DIVIDEND_100, 5.0, YEARS_10, "10-year moderate growth"),
-            (INITIAL_DIVIDEND_50, 7.0, YEARS_20, "20-year moderate growth"),
-            (INITIAL_DIVIDEND_200, 3.0, YEARS_5, "5-year slow growth"),
+            pytest.param(
+                INITIAL_DIVIDEND_100,
+                5.0,
+                YEARS_10,
+                "10-year moderate growth",
+                id="10yr-5pct",
+            ),
+            pytest.param(
+                INITIAL_DIVIDEND_50,
+                7.0,
+                YEARS_20,
+                "20-year moderate growth",
+                id="20yr-7pct",
+            ),
+            pytest.param(
+                INITIAL_DIVIDEND_200, 3.0, YEARS_5, "5-year slow growth", id="5yr-3pct"
+            ),
         ],
     )
     def test_projections_various_scenarios(
@@ -363,7 +391,9 @@ class TestDividendProjections:
         # Assert
         _assert_projection_structure(result, years)
         # First year should equal initial
-        assert result["Projected Dividend"].iloc[0] == initial
+        assert (
+            result["Projected Dividend"].iloc[0] == initial
+        ), f"Year 1 projection should equal initial ({initial}), got {result['Projected Dividend'].iloc[0]}"
 
 
 @pytest.mark.unit

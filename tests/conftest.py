@@ -192,27 +192,6 @@ def malformed_tsv_file(tmp_path: Path) -> Path:
 
 
 @pytest.fixture
-def large_dividend_data() -> pd.DataFrame:
-    """Large dataset for performance and scalability testing.
-
-    Contains 1000 rows with synthetic ticker data. Use sparingly as it's
-    relatively expensive to create. Marked as @pytest.mark.slow.
-
-    Returns:
-        pd.DataFrame: 1000 rows with TICK0.US through TICK999.US tickers.
-    """
-    tickers = [f"TICK{i}.US" for i in range(1000)]
-    return pd.DataFrame(
-        {
-            "Ticker": tickers,
-            "Net Dividend": [50.0 + i for i in range(1000)],
-            "Tax Collected": [10.0] * 1000,
-            "Shares": [100] * 1000,
-        }
-    )
-
-
-@pytest.fixture
 def edge_case_data() -> pd.DataFrame:
     """Dataset with boundary conditions for robustness testing.
 
@@ -235,37 +214,6 @@ def edge_case_data() -> pd.DataFrame:
             "Shares": [0, None, 100, 50],
         }
     )
-
-
-@pytest.fixture
-def dividend_data_factory() -> Callable[[int], pd.DataFrame]:
-    """Fixture factory: Create custom dividend datasets on demand.
-
-    Returns a callable that generates ticker data of arbitrary size.
-    Useful for parameterized tests needing various dataset sizes.
-
-    Example:
-        def test_scaling(dividend_data_factory):
-            small = dividend_data_factory(10)
-            large = dividend_data_factory(1000)
-            ...
-
-    Returns:
-        Callable: Function(size: int) -> pd.DataFrame
-    """
-
-    def _factory(num_rows: int) -> pd.DataFrame:
-        tickers = [f"TEST{i}.US" for i in range(num_rows)]
-        return pd.DataFrame(
-            {
-                "Ticker": tickers,
-                "Net Dividend": [100.0 + i for i in range(num_rows)],
-                "Tax Collected": [15.0] * num_rows,
-                "Shares": [100] * num_rows,
-            }
-        )
-
-    return _factory
 
 
 # ============================================================================
@@ -354,62 +302,6 @@ def color_hex_pair(request: pytest.FixtureRequest) -> tuple[str, str]:
 
 
 # ============================================================================
-# MOCK STREAMLIT FIXTURES
-# ============================================================================
-
-
-@pytest.fixture
-def mock_streamlit() -> Generator[dict[str, MagicMock], None, None]:
-    """Mock Streamlit components for UI-less backend testing.
-
-    Patches all common Streamlit functions to prevent actual page rendering
-    during unit tests. Tests can verify calls to these mocks without a
-    running Streamlit server.
-
-    Mocked functions:
-    - Config: set_page_config
-    - Display: title, markdown, error, warning, info
-    - Input: multiselect, selectbox, number_input, slider
-    - Control: stop
-
-    Example:
-        def test_app_config(mock_streamlit):
-            from main import app  # Won't render UI
-            app.run()
-            mock_streamlit["title"].assert_called_once()
-
-    Yields:
-        dict[str, MagicMock]: Dictionary of mocked Streamlit functions.
-                             Access as mock_streamlit["title"], etc.
-    """
-    with (
-        patch("streamlit.set_page_config") as mock_config,
-        patch("streamlit.error") as mock_error,
-        patch("streamlit.stop") as mock_stop,
-        patch("streamlit.warning") as mock_warning,
-        patch("streamlit.info") as mock_info,
-        patch("streamlit.multiselect") as mock_multiselect,
-        patch("streamlit.selectbox") as mock_selectbox,
-        patch("streamlit.number_input") as mock_number,
-        patch("streamlit.slider") as mock_slider,
-        patch("streamlit.title") as mock_title,
-        patch("streamlit.markdown") as mock_markdown,
-    ):
-        yield {
-            "config": mock_config,
-            "error": mock_error,
-            "stop": mock_stop,
-            "warning": mock_warning,
-            "info": mock_info,
-            "multiselect": mock_multiselect,
-            "selectbox": mock_selectbox,
-            "number_input": mock_number,
-            "slider": mock_slider,
-            "title": mock_title,
-            "markdown": mock_markdown,
-        }
-
-
 # ============================================================================
 # RANDOM SEED (reproducible tests)
 # ============================================================================

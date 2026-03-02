@@ -166,8 +166,9 @@ class ColorManager:
         unique_tickers = sorted(tickers)
         color_palette = px.colors.qualitative.Pastel
 
+        # Convert RGB colors to hex format
         self.ticker_colors = {
-            ticker: color_palette[i % len(color_palette)]
+            ticker: rgb_to_hex(color_palette[i % len(color_palette)])
             for i, ticker in enumerate(unique_tickers)
         }
 

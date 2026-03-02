@@ -115,10 +115,15 @@ class TestDataCleaning:
         processor = DividendDataProcessor(str(sample_tsv_file))
 
         # Assert
-        assert processor.df["Net Dividend"].dtype in [float, "float64"]
-        assert processor.df["Net Dividend"].iloc[0] == DIVIDEND_50_USD
+        assert processor.df["Net Dividend"].dtype in [
+            float,
+            "float64",
+        ], f"Net Dividend should be numeric, got {processor.df['Net Dividend'].dtype}"
+        assert (
+            processor.df["Net Dividend"].iloc[0] == DIVIDEND_50_USD
+        ), f"First dividend should be {DIVIDEND_50_USD}, got {processor.df['Net Dividend'].iloc[0]}"
         # All values should be positive (no negative dividends in clean data)
-        assert all(processor.df["Net Dividend"] > 0)
+        assert all(processor.df["Net Dividend"] > 0), "All dividends should be positive"
 
     def test_strips_tax_collected_percentage_suffix(
         self, sample_tsv_file: Path
@@ -234,9 +239,13 @@ class TestFilterData:
         filtered = processor.filter_data([TICKER_AAPL])
 
         # Assert
-        assert not filtered.empty
-        assert all(filtered["Ticker"] == TICKER_AAPL)
-        assert len(filtered) == SAMPLE_DATA_AAPL_COUNT
+        assert not filtered.empty, f"Filter for {TICKER_AAPL} should not be empty"
+        assert all(
+            filtered["Ticker"] == TICKER_AAPL
+        ), f"All filtered rows should have ticker {TICKER_AAPL}"
+        assert (
+            len(filtered) == SAMPLE_DATA_AAPL_COUNT
+        ), f"Expected {SAMPLE_DATA_AAPL_COUNT} rows for {TICKER_AAPL}, got {len(filtered)}"
 
     def test_filter_by_multiple_tickers(self, sample_tsv_file: Path) -> None:
         """Test filtering to include multiple selected tickers.
@@ -419,16 +428,23 @@ class TestDataIntegrity:
         assert processor2.df.loc[0, "Net Dividend"] == original_value
         assert processor2.df.loc[0, "Net Dividend"] != 999.0
 
-    def test_large_dataset_loads_efficiently(
-        self, large_dividend_data: pd.DataFrame, tmp_path: Path
-    ) -> None:
+    def test_large_dataset_loads_efficiently(self, tmp_path: Path) -> None:
         """Test processor handles large datasets (1000+ rows) efficiently.
 
         Performance test ensures scaling works without memory issues.
         """
-        # Arrange
+        # Arrange - create large dataset inline (1000 rows)
         file_path = tmp_path / "large.csv"
-        df = large_dividend_data.copy()
+        tickers = [f"TICK{i}.US" for i in range(1000)]
+        df = pd.DataFrame(
+            {
+                "Ticker": tickers,
+                "Net Dividend": [50.0 + i for i in range(1000)],
+                "Tax Collected": [10.0] * 1000,
+                "Shares": [100] * 1000,
+            }
+        )
+        # Add suffixes to match real file format
         df["Net Dividend"] = df["Net Dividend"].astype(str) + " USD"
         df["Tax Collected"] = df["Tax Collected"].astype(str) + "%"
         df.to_csv(file_path, sep="\t", index=False)
