@@ -146,6 +146,12 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
+# Ruff linter
+.ruff_cache/
+
+# pytest benchmarks
+.benchmarks/
+
 # Pyre type checker
 .pyre/
 
