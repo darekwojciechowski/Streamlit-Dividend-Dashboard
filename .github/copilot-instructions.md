@@ -29,26 +29,65 @@ The data source is a local TSV file (`data/dividend_data.csv`) representing a pe
 | Data processing | pandas | `>=2.2.3,<3` |
 | Charts | Plotly (express + graph_objects) | `>=5.24.1,<6` |
 | Interactive chart | streamlit-elements (Nivo.js + MUI) | `>=0.1.0,<0.2.0` |
+| Settings / env | pydantic-settings | `>=2.0.0,<3` |
 | Dependency manager | Poetry + pyproject.toml | poetry-core `>=2.0.0` |
+
+**Dev dependencies (in `[dependency-groups].dev`):** `pytest`, `pytest-cov`, `pytest-mock`, `pytest-asyncio`, `pytest-xdist`, `hypothesis`, `freezegun`, `pytest-benchmark`, `mypy`, `ruff`.
 
 **Python version notes:**
 - Python 3.12+ is required. Use built-in generic annotations (`list[str]`, `dict[str, int]`, `str | None`) — never `from __future__ import annotations` or `typing.List`, `typing.Dict`, `typing.Optional`.
-- `streamlit-elements` is the **only** dependency for Nivo.js; it is used exclusively in `components/nivo_pie_chart.py`.
+- `streamlit-elements` is the **only** dependency for Nivo.js; it is used exclusively in `app/components/nivo_pie_chart.py`.
 
 ---
+
+## Project Layout
+
+All application source code lives inside the `app/` package. `main.py` orchestrates the app from the project root.
+
+```
+Streamlit-Dividend-Dashboard/
+├── main.py                          # Entry point; owns DividendApp
+├── pyproject.toml
+├── data/dividend_data.csv
+├── tests/
+│   ├── conftest.py
+│   └── unit/
+│       ├── test_app_config.py
+│       ├── test_color_manager.py
+│       ├── test_data_processor.py
+│       └── test_dividend_calculator.py
+└── app/
+    ├── app_config.py                # Constants imported by main.py
+    ├── data_processor.py            # DividendDataProcessor (primary)
+    ├── config/
+    │   ├── app_config.py            # Mirror of app/app_config.py
+    │   └── settings.py              # Pydantic-settings Settings class
+    ├── components/
+    │   ├── drip_calculator.py
+    │   └── nivo_pie_chart.py
+    ├── styles/
+    │   └── colors_and_styles.py
+    └── utils/
+        ├── color_manager.py
+        ├── data_processor.py        # Mirror of app/data_processor.py
+        └── dividend_calculator.py
+```
 
 ## File Responsibilities
 
 | File | Role |
 |---|---|
 | `main.py` | Orchestrates every UI section; owns `DividendApp`; calls all components |
-| `app_config.py` | Single source of truth for every constant, default, and theme color |
-| `data_processor.py` | Reads and sanitises the TSV; exposes `filter_data(selected_tickers)` |
-| `components/drip_calculator.py` | Encapsulated DRIP UI: inputs → simulation → metric cards → subplot chart |
-| `components/nivo_pie_chart.py` | Encapsulated Nivo.js donut: receives data + colors, renders via streamlit-elements |
-| `utils/color_manager.py` | All color math: Pastel palette assignment, WCAG contrast, gradient generation |
-| `utils/dividend_calculator.py` | Pure calculation: CAGR projections, growth info, currency symbol inference |
-| `styles/colors_and_styles.py` | `BASE_COLORS` palette list + `CSS_STYLES` multi-line HTML `<style>` block |
+| `app/app_config.py` | Single source of truth for every constant, default, and theme color (imported by `main.py`) |
+| `app/config/app_config.py` | Mirror of `app/app_config.py`; used by `app/config/settings.py` |
+| `app/config/settings.py` | `Settings` (pydantic-settings `BaseSettings`): loads env vars / `.env` file; exposes `settings` singleton |
+| `app/data_processor.py` | Reads and sanitises the TSV; exposes `filter_data(selected_tickers)` |
+| `app/utils/data_processor.py` | Mirror of `app/data_processor.py` (kept for internal package imports) |
+| `app/components/drip_calculator.py` | Encapsulated DRIP UI: inputs → simulation → metric cards → subplot chart |
+| `app/components/nivo_pie_chart.py` | Encapsulated Nivo.js donut: receives data + colors, renders via streamlit-elements |
+| `app/utils/color_manager.py` | Module-level color utilities + `ColorManager` class: Pastel palette assignment, WCAG contrast, gradient generation, tile HTML |
+| `app/utils/dividend_calculator.py` | Pure calculation: CAGR projections, growth info, currency symbol inference |
+| `app/styles/colors_and_styles.py` | `BASE_COLORS` palette list + `CSS_STYLES` multi-line HTML `<style>` block |
 | `data/dividend_data.csv` | Tab-separated portfolio data; values include `" USD"` and `"%"` suffixes |
 
 ---
@@ -71,12 +110,13 @@ Currency is **always** inferred from the ticker suffix via `DividendCalculator.g
 ## Coding Conventions
 
 ### Constants and configuration
-- All magic numbers, default values, colors, and file paths belong in `app_config.py`.
+- All magic numbers, default values, colors, and file paths belong in `app/app_config.py`.
 - Never define constants inline in `main.py` or any component file.
 - `COLOR_THEME["primary"]` is `#8A2BE2` (purple) — used for milestones and accents.
+- Environment-specific overrides (file path, debug flag, environment name) go in `app/config/settings.py` via the `Settings` class and `.env` file — never as hardcoded constants.
 
 ### CSS and styling
-- All CSS lives exclusively in `styles/colors_and_styles.py` inside the `CSS_STYLES` string.
+- All CSS lives exclusively in `app/styles/colors_and_styles.py` inside the `CSS_STYLES` string.
 - Inject CSS once per app run via `st.markdown(CSS_STYLES, unsafe_allow_html=True)`.
 - Never write `<style>` blocks inside component files.
 - CSS uses `clamp()`-based fluid typography and CSS custom properties.
@@ -86,8 +126,13 @@ Currency is **always** inferred from the ticker suffix via `DividendCalculator.g
 ### Color management
 - Always go through `ColorManager` — never import `px.colors` directly in components.
 - `ColorManager.generate_colors_for_tickers()` assigns Plotly Pastel colors in sorted ticker order. Call it once after filtering.
-- Use `hex_to_rgba(hex, alpha)` for Plotly fill transparency; use `rgb_to_hex(rgb)` when Nivo.js requires hex.
-- Use `apply_wcag_ui_standards(color)` to choose `#000000` vs `#FFFFFF` text on dynamic backgrounds.
+- `ColorManager.create_tile_html(ticker, shares)` builds the gradient HTML tile for the portfolio overview.
+- Module-level helpers in `app/utils/color_manager.py` (import directly when needed):
+  - `hex_to_rgba(hex, alpha)` — Plotly fill transparency.
+  - `rgb_to_hex(rgb)` — convert rgb string to hex for Nivo.js.
+  - `adjust_gradient(color)` — lightens a color for gradient endpoints.
+  - `apply_wcag_ui_standards(color) -> bool` — returns `True` if the color is perceived as **light** (luminance > 0.5).
+  - `determine_text_color_for_dropdown(bg_color) -> str` — returns `"#000000"` or `"#FFFFFF"` based on background luminance; use this (not `apply_wcag_ui_standards`) when you need a ready-to-use text color string.
 
 ### Calculation logic
 - `DividendCalculator` is a pure utility class — all methods are `@staticmethod`, no `st.*` calls allowed.
@@ -113,11 +158,13 @@ Currency is **always** inferred from the ticker suffix via `DividendCalculator.g
 
 | Anti-pattern | Correct approach |
 |---|---|
-| Inline CSS inside component files | Extend `CSS_STYLES` in `styles/colors_and_styles.py` |
-| Constants defined in `main.py` | Add to `app_config.py` |
+| Inline CSS inside component files | Extend `CSS_STYLES` in `app/styles/colors_and_styles.py` |
+| Constants defined in `main.py` | Add to `app/app_config.py` |
 | `st.*` calls inside `DividendCalculator` | Pure logic only; call Streamlit in `main.py` or components |
 | `px.colors` imported directly in a component | Use `ColorManager.generate_colors_for_tickers()` |
 | Hardcoded currency symbols like `"$"` | Use `DividendCalculator.get_currency_symbol(ticker)` |
+| Using `apply_wcag_ui_standards()` as a text color string | It returns `bool`; use `determine_text_color_for_dropdown()` for a CSS color string |
+| Environment-specific values hardcoded in source | Use `app/config/settings.py` + `.env` file |
 | `typing.List`, `typing.Optional`, `typing.Dict` | Use `list[str]`, `str | None`, `dict[str, int]` (Python 3.12+) |
 | `from __future__ import annotations` | Not needed on Python 3.12+ |
 | Adding logic directly to `utils/__init__.py` | Keep it as a package marker only |
@@ -128,9 +175,10 @@ Currency is **always** inferred from the ticker suffix via `DividendCalculator.g
 
 | Task | Where to act |
 |---|---|
-| New constant or default | `app_config.py` only |
+| New constant or default | `app/app_config.py` only |
+| New env-overridable setting | Add field to `Settings` in `app/config/settings.py`; back it with a constant from `app/config/app_config.py` |
 | New chart section | Add `_render_<section>(self)` to `DividendApp` in `main.py`; call from `run()` |
-| New component | `components/<name>.py`; constructor takes `ticker_colors: dict[str, str]`; exposes `.render()` |
-| New CSS | Extend `CSS_STYLES` in `styles/colors_and_styles.py` |
+| New component | `app/components/<name>.py`; constructor takes `ticker_colors: dict[str, str]`; exposes `.render()` |
+| New CSS | Extend `CSS_STYLES` in `app/styles/colors_and_styles.py` |
 | New CSV column | Add to `REQUIRED_COLUMNS`; add strip logic in `_clean_dataframe()`; include in `filter_data()` |
 | New ticker country | Add suffix → currency entry in `DividendCalculator.get_currency_symbol()` |

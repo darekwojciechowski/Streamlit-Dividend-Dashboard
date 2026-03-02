@@ -17,7 +17,7 @@ The processor reads TSV files where:
 import pytest
 import pandas as pd
 from pathlib import Path
-from data_processor import DividendDataProcessor
+from app.data_processor import DividendDataProcessor
 
 # ============================================================================
 # TEST CONSTANTS - Reusable test data

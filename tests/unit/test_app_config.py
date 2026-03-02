@@ -15,7 +15,7 @@ Configuration categories tested:
 """
 
 import pytest
-import app_config
+import app.app_config as app_config
 
 # ============================================================================
 # TEST CONSTANTS

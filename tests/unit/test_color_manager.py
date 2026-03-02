@@ -17,7 +17,7 @@ Test organization:
 """
 
 import pytest
-from utils.color_manager import (
+from app.utils.color_manager import (
     adjust_gradient,
     apply_wcag_ui_standards,
     determine_text_color_for_dropdown,

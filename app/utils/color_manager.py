@@ -3,7 +3,7 @@
 import random
 import pandas as pd
 import plotly.express as px
-from styles.colors_and_styles import BASE_COLORS
+from ..styles.colors_and_styles import BASE_COLORS
 
 
 def adjust_gradient(color: str) -> str:
@@ -17,29 +17,27 @@ def adjust_gradient(color: str) -> str:
         str: The adjusted color in rgb(r, g, b) format.
     """
     try:
-        if color.startswith('rgb'):
+        if color.startswith("rgb"):
             # Extract numbers, handle potential alpha value if present
-            rgb_values = color.split('(')[1].split(')')[0].split(',')
-            rgb = [int(c.strip())
-                   for c in rgb_values[:3]]  # Take only first 3 for RGB
-        elif color.startswith('#'):
-            hex_color = color.lstrip('#')
+            rgb_values = color.split("(")[1].split(")")[0].split(",")
+            rgb = [int(c.strip()) for c in rgb_values[:3]]  # Take only first 3 for RGB
+        elif color.startswith("#"):
+            hex_color = color.lstrip("#")
             if len(hex_color) == 3:  # Handle shorthand hex (e.g., #F00)
-                hex_color = ''.join([c*2 for c in hex_color])
+                hex_color = "".join([c * 2 for c in hex_color])
             if len(hex_color) != 6:
                 raise ValueError("Invalid hex color format")
-            rgb = [int(hex_color[i:i+2], 16) for i in (0, 2, 4)]
+            rgb = [int(hex_color[i : i + 2], 16) for i in (0, 2, 4)]
         else:
-            raise ValueError(
-                "Invalid color format. Use #RRGGBB or rgb(r,g,b).")
+            raise ValueError("Invalid color format. Use #RRGGBB or rgb(r,g,b).")
 
         # Increase brightness slightly, capping at 255
         adjusted = [min(255, c + 40) for c in rgb]
-        return f'rgb({adjusted[0]}, {adjusted[1]}, {adjusted[2]})'
+        return f"rgb({adjusted[0]}, {adjusted[1]}, {adjusted[2]})"
     except Exception as e:
         print(f"Error adjusting gradient for color '{color}': {e}")
         # Return a default or the original color in case of error
-        return 'rgb(200, 200, 200)'  # Default grey
+        return "rgb(200, 200, 200)"  # Default grey
 
 
 def apply_wcag_ui_standards(color: str) -> bool:
@@ -55,9 +53,9 @@ def apply_wcag_ui_standards(color: str) -> bool:
         bool: True if the color is considered light (luminance > 0.5), False otherwise.
     """
     try:
-        color = color.lstrip('#')
+        color = color.lstrip("#")
         if len(color) == 3:
-            color = ''.join([c*2 for c in color])
+            color = "".join([c * 2 for c in color])
         if len(color) != 6:
             raise ValueError("Invalid hex color format for WCAG check")
 
@@ -112,23 +110,23 @@ def hex_to_rgba(hex_color: str, alpha: float = 1.0) -> str:
         RGBA color string
     """
     # Remove # if present
-    hex_color = hex_color.lstrip('#')
+    hex_color = hex_color.lstrip("#")
 
     # Handle short form (e.g., #fff)
     if len(hex_color) == 3:
-        hex_color = ''.join([c*2 for c in hex_color])
+        hex_color = "".join([c * 2 for c in hex_color])
 
     # Default to purple if invalid
     if len(hex_color) != 6:
-        hex_color = '8A2BE2'
+        hex_color = "8A2BE2"
 
     try:
         r = int(hex_color[0:2], 16)
         g = int(hex_color[2:4], 16)
         b = int(hex_color[4:6], 16)
-        return f'rgba({r}, {g}, {b}, {alpha})'
+        return f"rgba({r}, {g}, {b}, {alpha})"
     except ValueError:
-        return f'rgba(138, 43, 226, {alpha})'  # Default purple
+        return f"rgba(138, 43, 226, {alpha})"  # Default purple
 
 
 def rgb_to_hex(rgb_color: str) -> str:
@@ -188,8 +186,7 @@ class ColorManager:
             self.used_colors = []
 
         # Get available colors
-        available_colors = [
-            c for c in BASE_COLORS if c not in self.used_colors]
+        available_colors = [c for c in BASE_COLORS if c not in self.used_colors]
 
         # Pick a random color from available ones
         color = random.choice(available_colors)
@@ -202,8 +199,9 @@ class ColorManager:
         color = self.get_random_base_color()
         gradient_color = adjust_gradient(color)
         text_color = determine_text_color_for_dropdown(color)
-        formatted_shares = f"{shares:,.0f}" if pd.notna(
-            shares) and shares > 0 else "N/A"
+        formatted_shares = (
+            f"{shares:,.0f}" if pd.notna(shares) and shares > 0 else "N/A"
+        )
 
         return f"""
         <div class="gradient-tile" style="

@@ -20,7 +20,7 @@ Test organization:
 import pytest
 import pandas as pd
 from datetime import datetime
-from utils.dividend_calculator import DividendCalculator
+from app.utils.dividend_calculator import DividendCalculator
 
 # ============================================================================
 # TEST CONSTANTS - Reusable test data

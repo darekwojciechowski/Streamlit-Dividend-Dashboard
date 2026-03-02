@@ -1,9 +1,10 @@
+"""Nivo.js donut chart component rendered via streamlit-elements."""
 
 import streamlit as st
 from streamlit_elements import elements, mui
 from streamlit_elements import nivo
 import random
-from utils.color_manager import rgb_to_hex
+from ..utils.color_manager import rgb_to_hex
 
 
 class NivoPieChart:
@@ -13,29 +14,61 @@ class NivoPieChart:
         """Initialize pie chart with essential parameters only."""
         # Define available patterns
         self.patterns = [
-            {"id": "dots", "type": "patternDots", "background": "inherit",
-                "color": "rgba(255, 255, 255, 0.3)", "size": 4, "padding": 1, "stagger": True},
-            {"id": "lines", "type": "patternLines", "background": "inherit",
-                "color": "rgba(255, 255, 255, 0.3)", "rotation": -45, "lineWidth": 6, "spacing": 10},
-            {"id": "horizontalLines", "type": "patternLines", "background": "inherit",
-                "color": "rgba(255, 255, 255, 0.3)", "rotation": 0, "lineWidth": 6, "spacing": 10},
-            {"id": "squares", "type": "patternSquares", "background": "inherit",
-                "color": "rgba(255, 255, 255, 0.3)", "size": 6, "padding": 2, "stagger": True}
+            {
+                "id": "dots",
+                "type": "patternDots",
+                "background": "inherit",
+                "color": "rgba(255, 255, 255, 0.3)",
+                "size": 4,
+                "padding": 1,
+                "stagger": True,
+            },
+            {
+                "id": "lines",
+                "type": "patternLines",
+                "background": "inherit",
+                "color": "rgba(255, 255, 255, 0.3)",
+                "rotation": -45,
+                "lineWidth": 6,
+                "spacing": 10,
+            },
+            {
+                "id": "horizontalLines",
+                "type": "patternLines",
+                "background": "inherit",
+                "color": "rgba(255, 255, 255, 0.3)",
+                "rotation": 0,
+                "lineWidth": 6,
+                "spacing": 10,
+            },
+            {
+                "id": "squares",
+                "type": "patternSquares",
+                "background": "inherit",
+                "color": "rgba(255, 255, 255, 0.3)",
+                "size": 6,
+                "padding": 2,
+                "stagger": True,
+            },
         ]
 
         # Process data with colors and random patterns
         if colors:
             self.data = [
-                {**item,
+                {
+                    **item,
                     "color": rgb_to_hex(colors.get(item["id"], "#636EFA")),
-                    "pattern": random.choice(self.patterns)["id"]}
+                    "pattern": random.choice(self.patterns)["id"],
+                }
                 for item in data
             ]
         else:
             self.data = [
-                {**item,
-                 "color": rgb_to_hex(item.get("color", "#636EFA")),
-                 "pattern": random.choice(self.patterns)["id"]}
+                {
+                    **item,
+                    "color": rgb_to_hex(item.get("color", "#636EFA")),
+                    "pattern": random.choice(self.patterns)["id"],
+                }
                 for item in data
             ]
 
@@ -77,20 +110,18 @@ class NivoPieChart:
                         "border": "none",
                     }
                 }
-            }
+            },
         }
 
     def render(self):
         """Render the pie chart."""
         with elements("nivo_pie_chart"):
-            with mui.Box(sx={
-                "height": self.height,
-                "width": "100%",
-                "minHeight": "300px",
-                "maxWidth": "100%"
-            }):
-                nivo.Pie(
-                    data=self.data,
-                    colors={"datum": "data.color"},
-                    **self.config
-                )
+            with mui.Box(
+                sx={
+                    "height": self.height,
+                    "width": "100%",
+                    "minHeight": "300px",
+                    "maxWidth": "100%",
+                }
+            ):
+                nivo.Pie(data=self.data, colors={"datum": "data.color"}, **self.config)
