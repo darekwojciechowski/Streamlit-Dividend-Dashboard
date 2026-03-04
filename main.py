@@ -212,7 +212,7 @@ class DividendApp:
         col1, col2, col3 = st.columns(3)
         with col1:
             st.metric(
-                label=f"Starting Dividend", value=f"{currency}{initial_dividend:.2f}"
+                label="Starting Dividend", value=f"{currency}{initial_dividend:.2f}"
             )
         with col2:
             st.metric(

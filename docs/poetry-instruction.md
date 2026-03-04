@@ -1,71 +1,72 @@
-# Poetry Instructions for Project Setup
+# Poetry project setup
 
-Poetry is a dependency management and packaging tool for Python. It helps manage your project's dependencies, virtual environments, and packaging. Follow these steps to get started with Poetry:
+Poetry manages project dependencies, virtual environments, and packaging for
+Python. This guide covers installation, dependency setup, and common commands
+for `streamlit-dividend-dashboard`.
 
 ## Step 1: Install Poetry
 
-**MacOS** Install Poetry: Use Homebrew to install Poetry by running the following command:
+On **macOS**, install Poetry with Homebrew:
 
 ```bash
 brew install poetry
 ```
 
-Alternatively, if you're on **Windows**, you can use:
+On **Windows**, install with pip:
 
 ```bash
 pip install poetry
 ```
 
-## Step 2: Initialize a Poetry Project
-
-
-Navigate to your project directory, which should be the `base location` for your project:
+## Step 2: Navigate to project directory
 
 ```bash
-cd Streamlit-Dividend-Dashboard
+cd streamlit-dividend-dashboard
 ```
 
-Initialize a new Poetry project:
+## Step 3: Install project dependencies
+
+Install all dependencies defined in `pyproject.toml`:
 
 ```bash
-poetry init
+poetry install
 ```
 
-Follow the prompts to set up your project. You can specify the package name, version, description, author, license, and dependencies.
+This creates a virtual environment and installs:
 
-## Step 3: Add Dependencies
+- **Core dependencies**: `pandas`, `streamlit`, `plotly`, `streamlit-elements`,
+  `pydantic-settings`
+- **Dev dependencies**: `pytest`, `pytest-cov`, `pytest-mock`, `pytest-asyncio`,
+  `pytest-xdist`, `hypothesis`, `freezegun`, `pytest-benchmark`, `mypy`, `ruff`
 
-You can add dependencies to your project using Poetry. For example, to add `requests`, `pandas`, `scikit-learn`, and `python-dotenv`, you can run:
-
-```bash
-poetry add pandas streamlit plotly streamlit-elements
-```
-
-## Step 4: Activate the Virtual Environment
-
-Poetry automatically creates a virtual environment for your project. To activate it, use:
-
-```bash
-poetry env activate
-```
-
-## Step 5: Run Your Project
-
-**IMPORTANT:** Always use `poetry run` to ensure you're using the correct environment with all dependencies:
+## Step 4: Run the app
 
 ```bash
 poetry run streamlit run main.py
 ```
 
-**Do NOT use** `streamlit run main.py` directly - it will use your global Python installation instead of Poetry's environment!
+## Step 5: Run tests
 
-## Additional Poetry Commands
+```bash
+poetry run pytest
+```
 
-Here are some other useful Poetry commands:
+## Common Poetry commands
 
-- **Install all dependencies**: `poetry install`
-- **Update dependencies**: `poetry update`
-- **Add development dependencies**: `poetry add --dev pytest`
-- **List all dependencies**: `poetry show`
-- **Build your package**: `poetry build`
-- **Remove a dependency**: `poetry remove requests`
+| Command | Description |
+|---|---|
+| `poetry add package-name` | Add a runtime dependency |
+| `poetry add --group dev package-name` | Add a dev dependency |
+| `poetry update` | Update all dependencies |
+| `poetry show` | List installed packages |
+| `poetry remove package-name` | Remove a dependency |
+| `poetry show --outdated` | List outdated packages |
+
+## Code quality
+
+Run linting with auto-fix and formatting using Ruff:
+
+```bash
+poetry run ruff check --fix .
+poetry run ruff format .
+```

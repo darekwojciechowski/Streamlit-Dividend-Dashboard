@@ -18,11 +18,10 @@ DATA_FILE_PATH = "data/dividend_data.csv"
 
 # Color Theme Configuration (Purple/Violet theme)
 COLOR_THEME = {
-    "primary": "#8A2BE2",      # Main purple
-    "secondary": "#A688D1",    # Light purple
-    "accent": "#6B46C1",       # Deep purple
-    "fallback": "#1f77b4",     # Default fallback blue
-    "success": "#10B981",      # Green for success
-    "warning": "#F59E0B"     # Amber for warnings
-
+    "primary": "#8A2BE2",  # Main purple
+    "secondary": "#A688D1",  # Light purple
+    "accent": "#6B46C1",  # Deep purple
+    "fallback": "#1f77b4",  # Default fallback blue
+    "success": "#10B981",  # Green for success
+    "warning": "#F59E0B",  # Amber for warnings
 }

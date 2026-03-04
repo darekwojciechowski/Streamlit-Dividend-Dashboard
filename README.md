@@ -1,8 +1,8 @@
 # Streamlit Dividend Dashboard
 
-![Python](https://img.shields.io/badge/Python-3.12+-blue?style=flat-square)
-![Streamlit](https://img.shields.io/badge/Streamlit-1.51+-FF4B4B?style=flat-square)
-![Pandas](https://img.shields.io/badge/Pandas-2.2+-150458?style=flat-square)
+![Python](https://img.shields.io/badge/dynamic/toml?url=https://raw.githubusercontent.com/darekwojciechowski/Streamlit-Dividend-Dashboard/main/pyproject.toml&query=$.tool.poetry.dependencies.python&label=Python&style=flat-square&logo=python&logoColor=white&color=blue)
+![Streamlit](https://img.shields.io/badge/dynamic/toml?url=https://raw.githubusercontent.com/darekwojciechowski/Streamlit-Dividend-Dashboard/main/pyproject.toml&query=$.tool.poetry.dependencies.streamlit&label=Streamlit&style=flat-square&color=FF4B4B)
+![Pandas](https://img.shields.io/badge/dynamic/toml?url=https://raw.githubusercontent.com/darekwojciechowski/Streamlit-Dividend-Dashboard/main/pyproject.toml&query=$.tool.poetry.dependencies.pandas&label=Pandas&style=flat-square&logo=pandas&logoColor=white&color=150458)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
 
 Interactive dashboard for analyzing stock dividend portfolios and projecting future growth. Built with `Streamlit`, `Pandas`, and `Plotly`, this application demonstrates modern data visualization techniques and financial modeling in Python.

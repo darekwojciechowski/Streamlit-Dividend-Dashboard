@@ -1,6 +1,5 @@
 """Nivo.js donut chart component rendered via streamlit-elements."""
 
-import streamlit as st
 from streamlit_elements import elements, mui
 from streamlit_elements import nivo
 import random

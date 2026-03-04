@@ -2,8 +2,16 @@
 
 # Define a list of base colors for the application
 BASE_COLORS = [
-    '#636EFA', '#EF553B', '#00CC96', '#AB63FA', '#FFA15A',
-    '#19D3F3', '#FF6692', '#B6E880', '#FF97FF', '#FECB52'
+    "#636EFA",
+    "#EF553B",
+    "#00CC96",
+    "#AB63FA",
+    "#FFA15A",
+    "#19D3F3",
+    "#FF6692",
+    "#B6E880",
+    "#FF97FF",
+    "#FECB52",
 ] * 2  # Repeating the list to ensure enough unique colors if needed
 
 # Define CSS styles for the application

@@ -10,7 +10,6 @@ These tests use real file I/O and actual data processor implementation.
 """
 
 import pytest
-import pandas as pd
 from pathlib import Path
 
 from app.data_processor import DividendDataProcessor

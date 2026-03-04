@@ -10,7 +10,6 @@ These tests verify that data_processor and dividend_calculator work together.
 """
 
 import pytest
-import pandas as pd
 from pathlib import Path
 
 from app.data_processor import DividendDataProcessor

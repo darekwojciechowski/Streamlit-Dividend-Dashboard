@@ -17,9 +17,8 @@ Fixture composition pattern:
 import pytest
 import pandas as pd
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 import random
-from typing import Generator, Callable
+from typing import Generator
 
 
 # ============================================================================

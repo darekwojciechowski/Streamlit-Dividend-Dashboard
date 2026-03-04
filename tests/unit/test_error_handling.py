@@ -52,9 +52,9 @@ class TestDataProcessorErrorHandling:
         # Empty file (headers only) should load without error, just with empty DataFrame
         processor = DividendDataProcessor(str(file_path))
         assert processor.df is not None
-        assert (
-            processor.df.empty
-        ), "File with headers only should result in empty DataFrame"
+        assert processor.df.empty, (
+            "File with headers only should result in empty DataFrame"
+        )
 
     def test_malformed_numeric_data_handling(self, tmp_path: Path) -> None:
         """Test handling of malformed numeric data (non-numeric in numeric fields)."""
@@ -166,9 +166,9 @@ class TestDividendCalculatorBoundaryConditions:
         assert isinstance(result, pd.DataFrame)
         assert len(result) == years
         # All projections should be 0
-        assert all(
-            result["Projected Dividend"] == 0.0
-        ), "Zero dividend should remain zero even with growth"
+        assert all(result["Projected Dividend"] == 0.0), (
+            "Zero dividend should remain zero even with growth"
+        )
 
     def test_negative_growth_projection(self) -> None:
         """Test projection with negative growth (dividend declining over time)."""
@@ -189,7 +189,7 @@ class TestDividendCalculatorBoundaryConditions:
         for i in range(len(dividends) - 1):
             assert dividends[i + 1] < dividends[i], (
                 f"With negative growth, dividends should decline. "
-                f"Got {dividends[i]} -> {dividends[i+1]}"
+                f"Got {dividends[i]} -> {dividends[i + 1]}"
             )
 
     def test_one_year_projection(self) -> None:
@@ -204,9 +204,9 @@ class TestDividendCalculatorBoundaryConditions:
 
         # Assert
         assert len(result) == 1
-        assert (
-            result["Projected Dividend"].iloc[0] == initial
-        ), "Single year projection should equal initial dividend"
+        assert result["Projected Dividend"].iloc[0] == initial, (
+            "Single year projection should equal initial dividend"
+        )
 
     def test_very_long_projection(self) -> None:
         """Test projection for many years (stress test)."""
@@ -220,9 +220,9 @@ class TestDividendCalculatorBoundaryConditions:
 
         # Assert
         assert len(result) == years
-        assert all(
-            result["Projected Dividend"] > 0
-        ), "All projections should be positive"
+        assert all(result["Projected Dividend"] > 0), (
+            "All projections should be positive"
+        )
         # Verify exponential growth (final should be much larger than initial)
         final_dividend = result["Projected Dividend"].iloc[-1]
         assert final_dividend > initial * 10, (
@@ -290,9 +290,9 @@ class TestDataIntegrity:
 
         # Assert - original should be unchanged
         current_original = processor.df.loc[0, "Net Dividend"]
-        assert (
-            current_original == original_value
-        ), "Modifications to filtered data should not affect original"
+        assert current_original == original_value, (
+            "Modifications to filtered data should not affect original"
+        )
 
     def test_multiple_filters_produce_consistent_results(self, tmp_path: Path) -> None:
         """Test that filtering same ticker twice produces same result."""
