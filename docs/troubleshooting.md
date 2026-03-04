@@ -1,21 +1,22 @@
-# Troubleshooting Guide
+# Troubleshooting guide
 
-This document contains common errors encountered during development and their solutions.
+Use this guide to diagnose and resolve known issues with the Streamlit
+Dividend Dashboard.
 
-## Error 1: Incorrect color of sliders and selection windows
+## Sliders and selection windows show the wrong primary color
 
-**Problem**: The primary color was displayed incorrectly throughout the entire application - it was supposed to be purple but appeared red.
+**Symptom**: The primary color appears red throughout the app instead of
+purple.
 
-**Cause**: Error in local Streamlit configuration.
+**Cause**: A stale browser cache overrides the configured Streamlit theme.
 
-**Solution**: Opening the Streamlit application in a different browser (e.g., Mozilla Firefox) resolved the color issue.
+**Resolution**: Open the app in a different browser (for example, Firefox).
+If the correct purple color appears, clear the cache in your original browser
+and reload.
 
-**Additional notes**: 
-- The problem may be related to browser cache
-- It's recommended to test the application in different browsers during development
-- You can also try clearing the browser cache before switching browsers
-- Make sure that `.streamlit/config.toml` color settings are consistent with `app_config.py` configuration to avoid styling conflicts
+**Additional notes**:
 
----
-
-*This document will be updated with additional encountered errors and their solutions.*
+- We recommend testing the app in more than one browser during development.
+- Verify that the `primaryColor` in `.streamlit/config.toml` matches the
+  `COLOR_THEME["primary"]` value (`#8A2BE2`) in `app/app_config.py` to
+  prevent styling conflicts.
