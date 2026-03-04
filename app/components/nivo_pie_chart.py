@@ -52,11 +52,13 @@ class NivoPieChart:
         ]
 
         # Process data with colors and random patterns
+        # ticker_colors dict already contains hex values from ColorManager;
+        # call rgb_to_hex only when the item carries a raw rgb() string.
         if colors:
             self.data = [
                 {
                     **item,
-                    "color": rgb_to_hex(colors.get(item["id"], "#636EFA")),
+                    "color": colors.get(item["id"], "#636EFA"),
                     "pattern": random.choice(self.patterns)["id"],
                 }
                 for item in data
@@ -65,7 +67,11 @@ class NivoPieChart:
             self.data = [
                 {
                     **item,
-                    "color": rgb_to_hex(item.get("color", "#636EFA")),
+                    "color": (
+                        rgb_to_hex(item.get("color", "#636EFA"))
+                        if item.get("color", "#636EFA").startswith("rgb")
+                        else item.get("color", "#636EFA")
+                    ),
                     "pattern": random.choice(self.patterns)["id"],
                 }
                 for item in data

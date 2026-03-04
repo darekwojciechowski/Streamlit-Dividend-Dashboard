@@ -20,10 +20,20 @@ from app.app_config import (
 
 
 class DividendApp:
-    """Modern Streamlit Dividend Dashboard Application."""
+    """Streamlit-based dividend portfolio dashboard.
+
+    Orchestrates data loading, ticker filtering, color assignment,
+    and rendering of all UI sections: portfolio overview, distribution
+    breakdown, growth calculator, and DRIP simulation.
+    """
 
     def __init__(self) -> None:
-        """Initialize the application."""
+        """Configure the Streamlit page and initialize core collaborators.
+
+        Sets page title, layout, and sidebar state, then loads portfolio
+        data and prepares `color_manager`, `calculator`, and application
+        state attributes.
+        """
         st.set_page_config(
             page_title=DEFAULT_PAGE_TITLE,
             initial_sidebar_state=DEFAULT_SIDEBAR_STATE,
@@ -40,7 +50,14 @@ class DividendApp:
         self.selected_ticker: str | None = None
 
     def _load_data(self) -> DividendDataProcessor:
-        """Load and initialize data processor."""
+        """Load the portfolio TSV and return a DividendDataProcessor.
+
+        Returns:
+            An initialized DividendDataProcessor backed by DATA_FILE_PATH.
+
+        Raises:
+            SystemExit: Calls st.stop() if the file cannot be loaded.
+        """
         try:
             return DividendDataProcessor(DATA_FILE_PATH)
         except Exception as e:
@@ -48,7 +65,11 @@ class DividendApp:
             st.stop()
 
     def run(self) -> None:
-        """Main application flow."""
+        """Run the full application rendering sequence.
+
+        Renders the page title, ticker selector, and all dashboard
+        sections in order.
+        """
         st.title("Dividend Analysis Dashboard")
 
         self._render_ticker_selector()
@@ -56,7 +77,11 @@ class DividendApp:
         self._render_dashboard()
 
     def _render_ticker_selector(self) -> None:
-        """Render the ticker selection widget."""
+        """Render the multiselect widget for choosing portfolio tickers.
+
+        Populates `self.selected_tickers` with the user's selection.
+        Displays a warning and returns early if no data is loaded.
+        """
         if self.data_processor.df is None or self.data_processor.df.empty:
             st.warning("No data available.")
             return
@@ -70,7 +95,13 @@ class DividendApp:
         )
 
     def _process_data(self) -> None:
-        """Process and filter data based on selections."""
+        """Filter portfolio data to the selected tickers and assign colors.
+
+        Updates `self.filtered_df` with rows matching `self.selected_tickers`
+        and calls `color_manager.generate_colors_for_tickers` for the
+        resulting unique tickers. Resets `filtered_df` to an empty DataFrame
+        if no tickers are selected.
+        """
         if not self.selected_tickers:
             self.filtered_df = pd.DataFrame()
             return
@@ -86,7 +117,12 @@ class DividendApp:
         self.color_manager.generate_colors_for_tickers(unique_tickers)
 
     def _render_dashboard(self) -> None:
-        """Render the main dashboard components."""
+        """Render all dashboard sections if filtered data is available.
+
+        Renders portfolio overview, distribution breakdown, growth
+        calculator, and DRIP simulation in sequence. Displays an info
+        message and returns early when `filtered_df` is empty.
+        """
         if self.filtered_df.empty:
             st.info("Select tickers to view analysis.")
             return
@@ -97,7 +133,11 @@ class DividendApp:
         self._render_drip_calculator()
 
     def _render_portfolio_overview(self) -> None:
-        """Render portfolio overview with share metrics."""
+        """Render gradient HTML tiles showing total shares per ticker.
+
+        Groups `filtered_df` by ticker, sums shares, and renders one
+        gradient tile per ticker via `ColorManager.create_tile_html`.
+        """
         st.markdown("## Portfolio Overview")
         st.markdown(CSS_STYLES, unsafe_allow_html=True)
 
@@ -116,7 +156,11 @@ class DividendApp:
         st.html(f'<div class="tiles-container">{tiles_html}</div>')
 
     def _render_dividend_analysis(self) -> None:
-        """Render dividend analysis charts."""
+        """Render a Nivo.js donut chart of net dividend distribution.
+
+        Groups `filtered_df` by ticker, sums net dividends, and passes
+        the aggregated data to `NivoPieChart` for rendering.
+        """
         st.markdown("## Distribution Breakdown")
         st.caption(
             "View the distribution of received dividend payments across portfolio"
@@ -143,7 +187,12 @@ class DividendApp:
         ).render()
 
     def _render_calculator(self) -> None:
-        """Render dividend growth calculator."""
+        """Render the dividend growth calculator section.
+
+        Provides controls for ticker selection, annual growth rate, and
+        projection horizon, then delegates to `_show_projection` to
+        display the resulting chart and metrics.
+        """
         st.header("Dividend Growth Calculator")
         st.caption("Project future dividend income based on growth assumptions.")
 
@@ -184,7 +233,17 @@ class DividendApp:
             self._show_projection(growth_rate, years)
 
     def _show_projection(self, growth_rate: float, years: int) -> None:
-        """Show dividend projections for selected ticker."""
+        """Render growth metrics and a bar chart for the selected ticker.
+
+        Calculates year-by-year dividend projections and highlights bars
+        where the projected dividend crosses a doubling threshold (2x, 4x,
+        and so on) using COLOR_THEME["primary"].
+
+        Args:
+            growth_rate: Expected annual dividend growth as a percentage
+                (for example, 5 for 5%).
+            years: Number of years to project forward.
+        """
         ticker_data = self.filtered_df[
             self.filtered_df["Ticker"] == self.selected_ticker
         ]
@@ -277,7 +336,11 @@ class DividendApp:
         st.plotly_chart(fig, use_container_width=True)
 
     def _render_drip_calculator(self) -> None:
-        """Render modern DRIP calculator."""
+        """Render the DRIP (Dividend Reinvestment Plan) calculator section.
+
+        Instantiates `DRIPCalculator` with the current ticker colors and
+        calls its `render` method.
+        """
         st.markdown("## DRIP Calculator")
         st.caption(
             "Simulate dividend reinvestment to estimate compound growth over time"
@@ -288,7 +351,7 @@ class DividendApp:
 
 
 def main() -> None:
-    """Application entry point."""
+    """Instantiate and run the dividend dashboard application."""
     app = DividendApp()
     app.run()
 
