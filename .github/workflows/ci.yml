@@ -46,7 +46,7 @@ jobs:
           virtualenvs-in-project: true
 
       - name: Cache Poetry virtualenv
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .venv
           key: venv-lint-${{ runner.os }}-3.12-${{ hashFiles('poetry.lock') }}
@@ -83,7 +83,7 @@ jobs:
           virtualenvs-in-project: true
 
       - name: Cache Poetry virtualenv
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .venv
           key: venv-typecheck-${{ runner.os }}-3.12-${{ hashFiles('poetry.lock') }}
@@ -122,7 +122,7 @@ jobs:
           virtualenvs-in-project: true
 
       - name: Cache Poetry virtualenv
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .venv
           key: venv-test-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}
@@ -184,7 +184,7 @@ jobs:
           virtualenvs-in-project: true
 
       - name: Cache Poetry virtualenv
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .venv
           key: venv-security-${{ runner.os }}-3.12-${{ hashFiles('poetry.lock') }}
