@@ -1,12 +1,14 @@
 """Data processor for loading, cleaning, and filtering dividend data."""
 
+from typing import ClassVar
+
 import pandas as pd
 
 
 class DividendDataProcessor:
     """Handles loading, cleaning, and filtering of dividend data."""
 
-    REQUIRED_COLUMNS = ["Ticker", "Net Dividend", "Tax Collected", "Shares"]
+    REQUIRED_COLUMNS: ClassVar[list[str]] = ["Ticker", "Net Dividend", "Tax Collected", "Shares"]
 
     def __init__(self, file_path: str):
         """Initialize processor and load data."""
@@ -21,9 +23,9 @@ class DividendDataProcessor:
             self._validate_columns(df)
             return df
         except FileNotFoundError:
-            raise FileNotFoundError(f"Data file not found at {self.file_path}")
+            raise FileNotFoundError(f"Data file not found at {self.file_path}") from None
         except Exception as e:
-            raise RuntimeError(f"Failed to process data: {e}")
+            raise RuntimeError(f"Failed to process data: {e}") from e
 
     def _clean_dataframe(self, df: pd.DataFrame) -> None:
         """Clean the dataframe in-place."""
@@ -46,7 +48,7 @@ class DividendDataProcessor:
                     if cleaner:
                         df[column] = cleaner(df[column])
                     df[column] = pd.to_numeric(df[column], errors="coerce")
-                except Exception:
+                except Exception:  # noqa: S112
                     continue  # Skip problematic columns
 
     def _validate_columns(self, df: pd.DataFrame) -> None:

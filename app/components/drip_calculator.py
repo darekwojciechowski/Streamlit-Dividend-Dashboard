@@ -1,9 +1,10 @@
 """Modern DRIP (Dividend Reinvestment Plan) Calculator Component."""
 
-import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+import streamlit as st
 from plotly.subplots import make_subplots
+
 from ..styles.colors_and_styles import CSS_STYLES
 from ..utils.color_manager import hex_to_rgba
 from ..utils.dividend_calculator import DividendCalculator
@@ -52,19 +53,15 @@ class DRIPCalculator:
             dividend_per_payment = current_annual_div / payment_frequency
 
             # Reinvest dividends throughout the year
-            shares_added = 0
-            total_dividend = 0
+            shares_added = 0.0
+            total_dividend = 0.0
             temp_shares = shares_start_of_year
 
             for payment_num in range(payment_frequency):
                 # Calculate price at this payment point (linear interpolation through the year)
-                price_fraction = (
-                    payment_num + 0.5
-                ) / payment_frequency  # Mid-point of period
+                price_fraction = (payment_num + 0.5) / payment_frequency  # Mid-point of period
                 price_growth_factor = 1 + share_price_growth / 100
-                price_at_payment = max(
-                    price_start_of_year * (price_growth_factor**price_fraction), 0.01
-                )
+                price_at_payment = max(price_start_of_year * (price_growth_factor**price_fraction), 0.01)
 
                 # Calculate dividend payment based on current shares (including previously reinvested)
                 payment = temp_shares * dividend_per_payment
@@ -78,9 +75,7 @@ class DRIPCalculator:
             current_shares = temp_shares
 
             # Price at END of year (after full year's growth)
-            price_end_of_year = max(
-                price_start_of_year * (1 + share_price_growth / 100), 0.01
-            )
+            price_end_of_year = max(price_start_of_year * (1 + share_price_growth / 100), 0.01)
 
             # Portfolio value at END of year (after reinvestment, at end-of-year price)
             portfolio_value = current_shares * price_end_of_year
@@ -109,9 +104,7 @@ class DRIPCalculator:
 
         return pd.DataFrame(results)
 
-    def render_modern_chart(
-        self, df: pd.DataFrame, ticker: str, currency: str = "$"
-    ) -> None:
+    def render_modern_chart(self, df: pd.DataFrame, ticker: str, currency: str = "$") -> None:
         """Render modern, interactive DRIP visualization."""
 
         # Create subplot with secondary y-axis
@@ -272,23 +265,15 @@ class DRIPCalculator:
 
         # Calculate key metrics
         initial_investment = initial["Portfolio Value"]
-        total_return = (
-            (final["Portfolio Value"] - initial_investment) / initial_investment * 100
-        )
-        drip_advantage = (
-            (final["Portfolio Value"] - final["Value Without DRIP"])
-            / final["Value Without DRIP"]
-            * 100
-        )
+        total_return = (final["Portfolio Value"] - initial_investment) / initial_investment * 100
+        drip_advantage = (final["Portfolio Value"] - final["Value Without DRIP"]) / final["Value Without DRIP"] * 100
         total_shares_gained = final["Shares"] - initial["Shares"]
         # Sum all dividend income across all years
         total_dividends = df["Total Dividend Income"].sum()
 
         # Format return values with proper sign handling
         total_return_formatted = f"{total_return:+.0f}%" if total_return != 0 else "0%"
-        drip_advantage_formatted = (
-            f"{drip_advantage:+.0f}%" if drip_advantage != 0 else "0%"
-        )
+        drip_advantage_formatted = f"{drip_advantage:+.0f}%" if drip_advantage != 0 else "0%"
 
         # Use CSS styles from colors_and_styles module
         st.markdown(CSS_STYLES, unsafe_allow_html=True)
@@ -322,7 +307,7 @@ class DRIPCalculator:
             },
         ]
 
-        for col, metric in zip(cols, metrics):
+        for col, metric in zip(cols, metrics, strict=False):
             with col:
                 st.markdown(
                     f"""

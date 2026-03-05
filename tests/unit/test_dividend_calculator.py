@@ -17,9 +17,10 @@ Test organization:
 - Static methods: Verification of pure function nature
 """
 
-import pytest
-import pandas as pd
 from datetime import datetime
+
+import pandas as pd
+import pytest
 from app.utils.dividend_calculator import DividendCalculator
 
 # ============================================================================
@@ -84,7 +85,7 @@ class TestCurrencySymbolInference:
     """
 
     @pytest.mark.parametrize(
-        "ticker,expected_currency,country",
+        ("ticker", "expected_currency", "country"),
         [
             pytest.param(TICKER_US, CURRENCY_USD, "US", id="us-aapl"),
             pytest.param("MSFT.US", CURRENCY_USD, "US (Microsoft)", id="us-msft"),
@@ -105,9 +106,7 @@ class TestCurrencySymbolInference:
             ),
         ],
     )
-    def test_currency_symbol_by_ticker_suffix(
-        self, ticker: str, expected_currency: str, country: str
-    ) -> None:
+    def test_currency_symbol_by_ticker_suffix(self, ticker: str, expected_currency: str, country: str) -> None:
         """Test currency inference from ticker country code suffix.
 
         Args:
@@ -119,9 +118,9 @@ class TestCurrencySymbolInference:
         result = DividendCalculator.get_currency_symbol(ticker)
 
         # Assert
-        assert result == expected_currency, (
-            f"Failed for {country}: {ticker} - expected {expected_currency}, got {result}"
-        )
+        assert (
+            result == expected_currency
+        ), f"Failed for {country}: {ticker} - expected {expected_currency}, got {result}"
 
     def test_get_currency_symbol_callable_as_static_method(self) -> None:
         """Test that get_currency_symbol is truly static (no instance needed).
@@ -150,17 +149,13 @@ class TestInitialDividendExtraction:
         Given multiple dividend values, should return the first one.
         """
         # Arrange
-        ticker_data = pd.DataFrame(
-            {"Net Dividend": [INITIAL_DIVIDEND_100, 105.0, 110.0]}
-        )
+        ticker_data = pd.DataFrame({"Net Dividend": [INITIAL_DIVIDEND_100, 105.0, 110.0]})
 
         # Act
         result = DividendCalculator.get_initial_dividend(ticker_data)
 
         # Assert
-        assert result == INITIAL_DIVIDEND_100, (
-            f"Should extract first dividend value, got {result}"
-        )
+        assert result == INITIAL_DIVIDEND_100, f"Should extract first dividend value, got {result}"
 
     def test_extract_returns_none_for_empty_dataframe(self) -> None:
         """Test extraction returns None when DataFrame is empty."""
@@ -232,9 +227,7 @@ class TestInitialDividendExtraction:
         Should scan past None/NaN values to find first valid dividend.
         """
         # Arrange
-        ticker_data = pd.DataFrame(
-            {"Net Dividend": [None, None, INITIAL_DIVIDEND_50, 55.0]}
-        )
+        ticker_data = pd.DataFrame({"Net Dividend": [None, None, INITIAL_DIVIDEND_50, 55.0]})
 
         # Act
         result = DividendCalculator.get_initial_dividend(ticker_data)
@@ -274,9 +267,7 @@ class TestDividendProjections:
         # Year 1 (index 0): Initial dividend unchanged
         assert result["Projected Dividend"].iloc[0] == pytest.approx(initial)
         # Year 2 (index 1): 100 * 1.07 = 107
-        assert result["Projected Dividend"].iloc[1] == pytest.approx(
-            DIVIDEND_100_AFTER_7PCT_1YR
-        )
+        assert result["Projected Dividend"].iloc[1] == pytest.approx(DIVIDEND_100_AFTER_7PCT_1YR)
 
     def test_flat_projection_with_zero_growth(self) -> None:
         """Test projection with 0% growth rate stays flat.
@@ -349,7 +340,7 @@ class TestDividendProjections:
         assert result["Projected Dividend"].iloc[0] == initial
 
     @pytest.mark.parametrize(
-        "initial,growth,years,description",
+        ("initial", "growth", "years", "description"),
         [
             pytest.param(
                 INITIAL_DIVIDEND_100,
@@ -365,9 +356,7 @@ class TestDividendProjections:
                 "20-year moderate growth",
                 id="20yr-7pct",
             ),
-            pytest.param(
-                INITIAL_DIVIDEND_200, 3.0, YEARS_5, "5-year slow growth", id="5yr-3pct"
-            ),
+            pytest.param(INITIAL_DIVIDEND_200, 3.0, YEARS_5, "5-year slow growth", id="5yr-3pct"),
         ],
     )
     def test_projections_various_scenarios(
@@ -391,9 +380,9 @@ class TestDividendProjections:
         # Assert
         _assert_projection_structure(result, years)
         # First year should equal initial
-        assert result["Projected Dividend"].iloc[0] == initial, (
-            f"Year 1 projection should equal initial ({initial}), got {result['Projected Dividend'].iloc[0]}"
-        )
+        assert (
+            result["Projected Dividend"].iloc[0] == initial
+        ), f"Year 1 projection should equal initial ({initial}), got {result['Projected Dividend'].iloc[0]}"
 
 
 @pytest.mark.unit
@@ -509,7 +498,7 @@ class TestGrowthStatistics:
         assert result["total_growth_pct"] == 0.0
 
     @pytest.mark.parametrize(
-        "initial,growth,years,description",
+        ("initial", "growth", "years", "description"),
         [
             (INITIAL_DIVIDEND_100, 5.0, YEARS_10, "10-year slow growth"),
             (INITIAL_DIVIDEND_50, 7.0, YEARS_20, "20-year moderate growth"),
@@ -536,9 +525,9 @@ class TestGrowthStatistics:
 
         # Assert
         assert result["years"] == years
-        assert isinstance(result["final_dividend"], (int, float))
-        assert isinstance(result["total_growth_pct"], (int, float))
-        assert isinstance(result["total_increase"], (int, float))
+        assert isinstance(result["final_dividend"], int | float)
+        assert isinstance(result["total_growth_pct"], int | float)
+        assert isinstance(result["total_increase"], int | float)
 
 
 @pytest.mark.unit
@@ -572,12 +561,8 @@ class TestStaticMethodProperties:
         calc2 = DividendCalculator()
 
         # Act - same calculation on both instances
-        result1 = calc1.calculate_projections(
-            INITIAL_DIVIDEND_100, GROWTH_RATE_POSITIVE, YEARS_3
-        )
-        result2 = calc2.calculate_projections(
-            INITIAL_DIVIDEND_100, GROWTH_RATE_POSITIVE, YEARS_3
-        )
+        result1 = calc1.calculate_projections(INITIAL_DIVIDEND_100, GROWTH_RATE_POSITIVE, YEARS_3)
+        result2 = calc2.calculate_projections(INITIAL_DIVIDEND_100, GROWTH_RATE_POSITIVE, YEARS_3)
 
         # Assert
         assert result1.equals(result2), "Results should be identical"

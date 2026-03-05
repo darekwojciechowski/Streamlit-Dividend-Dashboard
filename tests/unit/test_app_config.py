@@ -14,8 +14,8 @@ Configuration categories tested:
 - Color theme (all required keys, valid hex format)
 """
 
-import pytest
 import app.app_config as app_config
+import pytest
 
 # ============================================================================
 # TEST CONSTANTS
@@ -86,17 +86,13 @@ class TestApplicationDefaults:
         """Test DEFAULT_GROWTH_PERCENTAGE exists and is positive number."""
         # Assert
         assert hasattr(app_config, "DEFAULT_GROWTH_PERCENTAGE")
-        assert isinstance(app_config.DEFAULT_GROWTH_PERCENTAGE, (int, float))
+        assert isinstance(app_config.DEFAULT_GROWTH_PERCENTAGE, int | float)
         assert app_config.DEFAULT_GROWTH_PERCENTAGE > MIN_GROWTH_PERCENT
 
     def test_default_growth_percentage_in_reasonable_range(self) -> None:
         """Test growth rate is between 0% and 50% (sensible projection range)."""
         # Assert
-        assert (
-            MIN_GROWTH_PERCENT
-            < app_config.DEFAULT_GROWTH_PERCENTAGE
-            <= MAX_GROWTH_PERCENT
-        )
+        assert MIN_GROWTH_PERCENT < app_config.DEFAULT_GROWTH_PERCENTAGE <= MAX_GROWTH_PERCENT
 
     def test_default_growth_percentage_correct_value(self) -> None:
         """Test growth percentage equals expected value (7%)."""
@@ -152,17 +148,13 @@ class TestDataAndUIConfiguration:
         # Assert
         has_unix_sep = "/" in path
         has_windows_sep = "\\" in path
-        assert has_unix_sep or has_windows_sep, (
-            "Path should include directory separators"
-        )
+        assert has_unix_sep or has_windows_sep, "Path should include directory separators"
 
     @pytest.mark.parametrize(
-        "config_name,expected_type",
+        ("config_name", "expected_type"),
         REQUIRED_UI_CONFIG_ITEMS,
     )
-    def test_ui_config_attributes_defined(
-        self, config_name: str, expected_type: type
-    ) -> None:
+    def test_ui_config_attributes_defined(self, config_name: str, expected_type: type) -> None:
         """Test that all UI configuration attributes exist with correct types.
 
         Args:
@@ -235,9 +227,7 @@ class TestColorThemeConfiguration:
 
         # Assert
         assert isinstance(color_value, str)
-        assert _is_valid_hex_color(color_value), (
-            f"Color {color_key}='{color_value}' is not valid hex format"
-        )
+        assert _is_valid_hex_color(color_value), f"Color {color_key}='{color_value}' is not valid hex format"
 
     def test_success_and_warning_colors_are_distinct(self) -> None:
         """Test success and warning colors are different (for accessibility).
@@ -253,9 +243,7 @@ class TestColorThemeConfiguration:
         """Test all color theme values are strings (not other types)."""
         # Assert
         for key, value in app_config.COLOR_THEME.items():
-            assert isinstance(value, str), (
-                f"Color {key} should be string, got {type(value)}"
-            )
+            assert isinstance(value, str), f"Color {key} should be string, got {type(value)}"
 
 
 @pytest.mark.unit

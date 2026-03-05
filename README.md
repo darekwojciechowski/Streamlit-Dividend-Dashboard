@@ -1,5 +1,6 @@
 # Streamlit Dividend Dashboard
 
+[![CI](https://github.com/darekwojciechowski/Streamlit-Dividend-Dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/darekwojciechowski/Streamlit-Dividend-Dashboard/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.12+-blue?style=flat-square&logo=python&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.51+-FF4B4B?style=flat-square)
 ![Pandas](https://img.shields.io/badge/Pandas-2.2+-150458?style=flat-square&logo=pandas&logoColor=white)

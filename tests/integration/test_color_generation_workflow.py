@@ -9,9 +9,9 @@ Tests verify the complete color assignment flow:
 These tests verify that data_processor and color_manager work together.
 """
 
-import pytest
 from pathlib import Path
 
+import pytest
 from app.data_processor import DividendDataProcessor
 from app.utils.color_manager import ColorManager, determine_text_color_for_dropdown
 
@@ -137,9 +137,7 @@ class TestColorGenerationWorkflow:
         filtered_df = processor.filter_data(user_selection)
 
         assert not filtered_df.empty
-        assert all(
-            ticker in user_selection for ticker in filtered_df["Ticker"].unique()
-        )
+        assert all(ticker in user_selection for ticker in filtered_df["Ticker"].unique())
 
         # Step 4: Generate colors
         unique_tickers = sorted(filtered_df["Ticker"].unique().tolist())
@@ -148,14 +146,9 @@ class TestColorGenerationWorkflow:
 
         # Step 5: Verify colors ready for rendering
         assert len(colors) == len(unique_tickers)
-        assert all(
-            isinstance(color, str) and color.startswith("#")
-            for color in colors.values()
-        )
+        assert all(isinstance(color, str) and color.startswith("#") for color in colors.values())
 
-    def test_wcag_color_contrast_for_all_assigned_colors(
-        self, sample_tsv_file: Path
-    ) -> None:
+    def test_wcag_color_contrast_for_all_assigned_colors(self, sample_tsv_file: Path) -> None:
         """Test that all assigned colors meet WCAG contrast standards.
 
         Given:
@@ -175,7 +168,7 @@ class TestColorGenerationWorkflow:
         colors = color_mgr.generate_colors_for_tickers(tickers)
 
         # Verify all colors can have readable text (WCAG contrast check)
-        for ticker, color in colors.items():
+        for _ticker, color in colors.items():
             # Should be able to determine text color without exception
             text_color = determine_text_color_for_dropdown(color)
             assert text_color in ["#000000", "#FFFFFF"]

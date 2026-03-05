@@ -1,22 +1,21 @@
-import streamlit as st
 import pandas as pd
 import plotly.express as px
-
-from app.data_processor import DividendDataProcessor
-from app.components.nivo_pie_chart import NivoPieChart
-from app.components.drip_calculator import DRIPCalculator
-from app.utils.color_manager import ColorManager
-from app.utils.dividend_calculator import DividendCalculator
-from app.styles.colors_and_styles import CSS_STYLES
+import streamlit as st
 from app.app_config import (
-    DEFAULT_GROWTH_PERCENTAGE,
-    DEFAULT_NUM_YEARS,
-    DATA_FILE_PATH,
     COLOR_THEME,
+    DATA_FILE_PATH,
+    DEFAULT_GROWTH_PERCENTAGE,
+    DEFAULT_LAYOUT,
+    DEFAULT_NUM_YEARS,
     DEFAULT_PAGE_TITLE,
     DEFAULT_SIDEBAR_STATE,
-    DEFAULT_LAYOUT,
 )
+from app.components.drip_calculator import DRIPCalculator
+from app.components.nivo_pie_chart import NivoPieChart
+from app.data_processor import DividendDataProcessor
+from app.styles.colors_and_styles import CSS_STYLES
+from app.utils.color_manager import ColorManager
+from app.utils.dividend_calculator import DividendCalculator
 
 
 class DividendApp:
@@ -109,11 +108,7 @@ class DividendApp:
         self.filtered_df = self.data_processor.filter_data(self.selected_tickers)
 
         # Convert numpy array to list to avoid ambiguous truth value errors
-        unique_tickers = (
-            list(self.filtered_df["Ticker"].unique())
-            if not self.filtered_df.empty
-            else []
-        )
+        unique_tickers = list(self.filtered_df["Ticker"].unique()) if not self.filtered_df.empty else []
         self.color_manager.generate_colors_for_tickers(unique_tickers)
 
     def _render_dashboard(self) -> None:
@@ -149,8 +144,7 @@ class DividendApp:
         aggregated = self.filtered_df.groupby("Ticker", as_index=False)["Shares"].sum()
 
         tiles_html = "".join(
-            self.color_manager.create_tile_html(row["Ticker"], row["Shares"])
-            for _, row in aggregated.iterrows()
+            self.color_manager.create_tile_html(row["Ticker"], row["Shares"]) for _, row in aggregated.iterrows()
         )
 
         st.html(f'<div class="tiles-container">{tiles_html}</div>')
@@ -162,29 +156,21 @@ class DividendApp:
         the aggregated data to `NivoPieChart` for rendering.
         """
         st.markdown("## Distribution Breakdown")
-        st.caption(
-            "View the distribution of received dividend payments across portfolio"
-        )
+        st.caption("View the distribution of received dividend payments across portfolio")
 
         if "Net Dividend" not in self.filtered_df.columns:
             st.info("No dividend data available.")
             return
 
         # Prepare chart data
-        chart_data = (
-            self.filtered_df.groupby("Ticker", as_index=False)["Net Dividend"]
-            .sum()
-            .sort_values("Ticker")
-        )
+        chart_data = self.filtered_df.groupby("Ticker", as_index=False)["Net Dividend"].sum().sort_values("Ticker")
 
         # Pie chart
         nivo_data = [
             {"id": row["Ticker"], "label": row["Ticker"], "value": row["Net Dividend"]}
             for _, row in chart_data.iterrows()
         ]
-        NivoPieChart(
-            nivo_data, colors=self.color_manager.ticker_colors, height=400
-        ).render()
+        NivoPieChart(nivo_data, colors=self.color_manager.ticker_colors, height=400).render()
 
     def _render_calculator(self) -> None:
         """Render the dividend growth calculator section.
@@ -205,9 +191,7 @@ class DividendApp:
         col1, col2 = st.columns(2)
 
         with col1:
-            self.selected_ticker = st.selectbox(
-                "Select company:", available_tickers, key="calc_ticker"
-            )
+            self.selected_ticker = st.selectbox("Select company:", available_tickers, key="calc_ticker")
 
         with col2:
             growth_rate = st.number_input(
@@ -244,9 +228,7 @@ class DividendApp:
                 (for example, 5 for 5%).
             years: Number of years to project forward.
         """
-        ticker_data = self.filtered_df[
-            self.filtered_df["Ticker"] == self.selected_ticker
-        ]
+        ticker_data = self.filtered_df[self.filtered_df["Ticker"] == self.selected_ticker]
 
         initial_dividend = self.calculator.get_initial_dividend(ticker_data)
         if initial_dividend is None:
@@ -257,22 +239,16 @@ class DividendApp:
         currency = self.calculator.get_currency_symbol(self.selected_ticker)
 
         # Calculate projections
-        projections = self.calculator.calculate_projections(
-            initial_dividend, growth_rate, years
-        )
+        projections = self.calculator.calculate_projections(initial_dividend, growth_rate, years)
 
         # Calculate growth info
-        growth_info = self.calculator.calculate_growth_info(
-            initial_dividend, growth_rate, years
-        )
+        growth_info = self.calculator.calculate_growth_info(initial_dividend, growth_rate, years)
 
         # Display growth metrics
         st.subheader("Growth Summary")
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.metric(
-                label="Starting Dividend", value=f"{currency}{initial_dividend:.2f}"
-            )
+            st.metric(label="Starting Dividend", value=f"{currency}{initial_dividend:.2f}")
         with col2:
             st.metric(
                 label=f"Dividend After {years} Years",
@@ -286,9 +262,7 @@ class DividendApp:
             )
 
         # Create chart with color coding for doubling milestones
-        chart_color = self.color_manager.ticker_colors.get(
-            self.selected_ticker, COLOR_THEME["fallback"]
-        )
+        chart_color = self.color_manager.ticker_colors.get(self.selected_ticker, COLOR_THEME["fallback"])
 
         # Mark years where dividend crosses doubling thresholds (2x, 4x, 8x, etc.)
         bar_colors = []
@@ -297,9 +271,7 @@ class DividendApp:
 
         for current_value in projections["Projected Dividend"]:
             # Check if we crossed any threshold between prev and current value
-            is_milestone = any(
-                prev_value < initial_dividend * m <= current_value for m in multipliers
-            )
+            is_milestone = any(prev_value < initial_dividend * m <= current_value for m in multipliers)
             bar_colors.append(COLOR_THEME["primary"] if is_milestone else chart_color)
             prev_value = current_value
 
@@ -307,8 +279,7 @@ class DividendApp:
             projections,
             x="Year",
             y="Projected Dividend",
-            title=f"Projected Dividends for {self.selected_ticker} "
-            f"(Starting: {currency}{initial_dividend:.2f})",
+            title=f"Projected Dividends for {self.selected_ticker} (Starting: {currency}{initial_dividend:.2f})",
         )
 
         # Update bar colors
@@ -342,9 +313,7 @@ class DividendApp:
         calls its `render` method.
         """
         st.markdown("## DRIP Calculator")
-        st.caption(
-            "Simulate dividend reinvestment to estimate compound growth over time"
-        )
+        st.caption("Simulate dividend reinvestment to estimate compound growth over time")
 
         drip_calc = DRIPCalculator(self.color_manager.ticker_colors)
         drip_calc.render()

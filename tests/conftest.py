@@ -14,12 +14,11 @@ Fixture composition pattern:
 - Derived fixtures transform data (sample_tsv_file uses sample_dividend_data)
 """
 
-import pytest
-import pandas as pd
-from pathlib import Path
 import random
-from typing import Generator
+from pathlib import Path
 
+import pandas as pd
+import pytest
 
 # ============================================================================
 # SESSION-SCOPED FIXTURES
@@ -307,7 +306,7 @@ def color_hex_pair(request: pytest.FixtureRequest) -> tuple[str, str]:
 
 
 @pytest.fixture(autouse=True)
-def reset_random_seed() -> Generator[None, None, None]:
+def reset_random_seed() -> None:
     """Auto-use fixture ensuring deterministic randomness across runs.
 
     Resets Python's random seed to 42 before each test, ensuring that
@@ -321,7 +320,7 @@ def reset_random_seed() -> Generator[None, None, None]:
         None
     """
     random.seed(42)
-    yield
+    return
 
 
 # ============================================================================
@@ -359,9 +358,7 @@ def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line("markers", "benchmark: Performance benchmarks")
 
 
-def pytest_collection_modifyitems(
-    config: pytest.Config, items: list[pytest.Item]
-) -> None:
+def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
     """Auto-mark tests based on their file location in test suite.
 
     Automatically applies markers to tests based on where they're located:

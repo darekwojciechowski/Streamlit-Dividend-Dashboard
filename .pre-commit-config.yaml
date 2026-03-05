@@ -1,0 +1,35 @@
+# Pre-commit hooks — run locally before each commit.
+# Install: `pre-commit install`
+# Manual run: `pre-commit run --all-files`
+
+repos:
+  # General file hygiene
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-yaml
+      - id: check-toml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-added-large-files
+        args: ["--maxkb=500"]
+
+  # Ruff — linting + formatting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.6
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
+  # Mypy — static type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.14.1
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - pydantic-settings>=2.0.0
+          - pandas-stubs>=2.2.0
+        args: [--config-file=pyproject.toml]
+        pass_filenames: false
+        entry: mypy app/

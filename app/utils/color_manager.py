@@ -1,8 +1,10 @@
 """Color management utilities for the dividend dashboard."""
 
 import random
+
 import pandas as pd
 import plotly.express as px
+
 from ..styles.colors_and_styles import BASE_COLORS
 
 
@@ -168,8 +170,7 @@ class ColorManager:
 
         # Convert RGB colors to hex format
         self.ticker_colors = {
-            ticker: rgb_to_hex(color_palette[i % len(color_palette)])
-            for i, ticker in enumerate(unique_tickers)
+            ticker: rgb_to_hex(color_palette[i % len(color_palette)]) for i, ticker in enumerate(unique_tickers)
         }
 
         # Reset used colors when tickers change
@@ -190,7 +191,7 @@ class ColorManager:
         available_colors = [c for c in BASE_COLORS if c not in self.used_colors]
 
         # Pick a random color from available ones
-        color = random.choice(available_colors)
+        color = random.choice(available_colors)  # noqa: S311
         self.used_colors.append(color)
 
         return color
@@ -200,9 +201,7 @@ class ColorManager:
         color = self.get_random_base_color()
         gradient_color = adjust_gradient(color)
         text_color = determine_text_color_for_dropdown(color)
-        formatted_shares = (
-            f"{shares:,.0f}" if pd.notna(shares) and shares > 0 else "N/A"
-        )
+        formatted_shares = f"{shares:,.0f}" if pd.notna(shares) and shares > 0 else "N/A"
 
         return f"""
         <div class="gradient-tile" style="

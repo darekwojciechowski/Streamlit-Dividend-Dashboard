@@ -9,9 +9,9 @@ Tests verify the complete dividend calculation flow:
 These tests verify that data_processor and dividend_calculator work together.
 """
 
-import pytest
 from pathlib import Path
 
+import pytest
 from app.data_processor import DividendDataProcessor
 from app.utils.dividend_calculator import DividendCalculator
 
@@ -56,9 +56,7 @@ class TestDividendCalculationWorkflow:
         assert year_5_dividend > year_1_dividend
         assert year_5_dividend > initial
 
-    def test_dividend_currency_detection_from_filtered_data(
-        self, sample_tsv_file: Path
-    ) -> None:
+    def test_dividend_currency_detection_from_filtered_data(self, sample_tsv_file: Path) -> None:
         """Test currency symbol inference from filtered ticker data.
 
         Workflow:
@@ -111,9 +109,7 @@ class TestDividendCalculationWorkflow:
             projected_5yr = projections_df.iloc[-1]["Projected Dividend"]
             assert projected_5yr > total_dividend
 
-    def test_growth_statistics_for_filtered_portfolio(
-        self, sample_tsv_file: Path
-    ) -> None:
+    def test_growth_statistics_for_filtered_portfolio(self, sample_tsv_file: Path) -> None:
         """Test calculating growth statistics for filtered ticker set.
 
         Workflow:

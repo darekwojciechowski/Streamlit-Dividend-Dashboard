@@ -1,0 +1,226 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: 1
+  FORCE_COLOR: 1
+  POETRY_VIRTUALENVS_IN_PROJECT: true
+
+# ---------------------------------------------------------------------------
+# Reusable setup steps (composite via YAML anchors are not supported in GHA,
+# so we define a shared "setup" job output or repeat the steps per job).
+# ---------------------------------------------------------------------------
+
+jobs:
+  # ==========================================================================
+  # Lint — ruff check + format verification
+  # ==========================================================================
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-lint-${{ runner.os }}-3.12-${{ hashFiles('poetry.lock') }}
+          restore-keys: venv-lint-${{ runner.os }}-3.12-
+
+      - name: Install dependencies
+        run: poetry install --only dev --no-interaction
+
+      - name: Ruff lint
+        run: poetry run ruff check .
+
+      - name: Ruff format check
+        run: poetry run ruff format --check .
+
+  # ==========================================================================
+  # Type Check — mypy static analysis
+  # ==========================================================================
+  type-check:
+    name: Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-typecheck-${{ runner.os }}-3.12-${{ hashFiles('poetry.lock') }}
+          restore-keys: venv-typecheck-${{ runner.os }}-3.12-
+
+      - name: Install dependencies
+        run: poetry install --with dev --no-interaction
+
+      - name: Mypy
+        run: poetry run mypy app/
+
+  # ==========================================================================
+  # Test — pytest with coverage (matrix: Python 3.12 + 3.13)
+  # ==========================================================================
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-test-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}
+          restore-keys: venv-test-${{ runner.os }}-${{ matrix.python-version }}-
+
+      - name: Install dependencies
+        run: poetry install --with dev --no-interaction
+
+      - name: Run unit tests with coverage
+        run: >
+          poetry run pytest tests/unit/
+          -m unit
+          --cov=app
+          --cov-report=xml:coverage.xml
+          --cov-report=term-missing
+          --junitxml=junit.xml
+          -n auto
+
+      - name: Run integration tests
+        run: poetry run pytest tests/integration/ -m integration
+
+      - name: Run property-based tests
+        run: poetry run pytest tests/property_based/ -m property
+
+      - name: Coverage summary
+        if: matrix.python-version == '3.12'
+        run: |
+          echo "## 📊 Coverage Report" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          poetry run coverage report --format=markdown >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage artifact
+        if: matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+          retention-days: 7
+
+  # ==========================================================================
+  # Security — dependency audit + bandit rules
+  # ==========================================================================
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-security-${{ runner.os }}-3.12-${{ hashFiles('poetry.lock') }}
+          restore-keys: venv-security-${{ runner.os }}-3.12-
+
+      - name: Install dependencies
+        run: |
+          poetry install --only dev --no-interaction
+          pip install pip-audit
+
+      - name: Audit dependencies for known vulnerabilities
+        run: poetry run pip-audit
+
+      - name: Bandit security lint
+        run: poetry run ruff check . --select S
+
+  # ==========================================================================
+  # Quality Gate — single required status check for branch protection
+  # ==========================================================================
+  quality-gate:
+    name: Quality Gate
+    if: always()
+    needs: [lint, type-check, test, security]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check all jobs passed
+        run: |
+          if [[ "${{ needs.lint.result }}" != "success" ||
+                "${{ needs.type-check.result }}" != "success" ||
+                "${{ needs.test.result }}" != "success" ||
+                "${{ needs.security.result }}" != "success" ]]; then
+            echo "❌ One or more quality checks failed."
+            echo "  lint:       ${{ needs.lint.result }}"
+            echo "  type-check: ${{ needs.type-check.result }}"
+            echo "  test:       ${{ needs.test.result }}"
+            echo "  security:   ${{ needs.security.result }}"
+            exit 1
+          fi
+          echo "✅ All quality checks passed."

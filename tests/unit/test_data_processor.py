@@ -14,9 +14,10 @@ The processor reads TSV files where:
 - Required columns: Ticker, Net Dividend, Tax Collected, Shares
 """
 
-import pytest
-import pandas as pd
 from pathlib import Path
+
+import pandas as pd
+import pytest
 from app.data_processor import DividendDataProcessor
 
 # ============================================================================
@@ -119,15 +120,13 @@ class TestDataCleaning:
             float,
             "float64",
         ], f"Net Dividend should be numeric, got {processor.df['Net Dividend'].dtype}"
-        assert processor.df["Net Dividend"].iloc[0] == DIVIDEND_50_USD, (
-            f"First dividend should be {DIVIDEND_50_USD}, got {processor.df['Net Dividend'].iloc[0]}"
-        )
+        assert (
+            processor.df["Net Dividend"].iloc[0] == DIVIDEND_50_USD
+        ), f"First dividend should be {DIVIDEND_50_USD}, got {processor.df['Net Dividend'].iloc[0]}"
         # All values should be positive (no negative dividends in clean data)
         assert all(processor.df["Net Dividend"] > 0), "All dividends should be positive"
 
-    def test_strips_tax_collected_percentage_suffix(
-        self, sample_tsv_file: Path
-    ) -> None:
+    def test_strips_tax_collected_percentage_suffix(self, sample_tsv_file: Path) -> None:
         """Test that '%' suffix is removed from Tax Collected column.
 
         Input:  ['10%', '15%', ...]
@@ -169,18 +168,14 @@ class TestDataCleaning:
         processor = DividendDataProcessor(str(file_path))
 
         # Assert - column should be cleaned or not present with spaces
-        assert (
-            "Ticker" in processor.df.columns or " Ticker " not in processor.df.columns
-        )
+        assert "Ticker" in processor.df.columns or " Ticker " not in processor.df.columns
 
 
 @pytest.mark.unit
 class TestDataValidation:
     """Test schema and type validation during load."""
 
-    def test_raises_error_when_required_columns_missing(
-        self, invalid_tsv_file: Path
-    ) -> None:
+    def test_raises_error_when_required_columns_missing(self, invalid_tsv_file: Path) -> None:
         """Test FileNotFoundError when input file lacks required columns.
 
         The processor validates schema early. Missing required columns
@@ -240,12 +235,10 @@ class TestFilterData:
 
         # Assert
         assert not filtered.empty, f"Filter for {TICKER_AAPL} should not be empty"
-        assert all(filtered["Ticker"] == TICKER_AAPL), (
-            f"All filtered rows should have ticker {TICKER_AAPL}"
-        )
-        assert len(filtered) == SAMPLE_DATA_AAPL_COUNT, (
-            f"Expected {SAMPLE_DATA_AAPL_COUNT} rows for {TICKER_AAPL}, got {len(filtered)}"
-        )
+        assert all(filtered["Ticker"] == TICKER_AAPL), f"All filtered rows should have ticker {TICKER_AAPL}"
+        assert (
+            len(filtered) == SAMPLE_DATA_AAPL_COUNT
+        ), f"Expected {SAMPLE_DATA_AAPL_COUNT} rows for {TICKER_AAPL}, got {len(filtered)}"
 
     def test_filter_by_multiple_tickers(self, sample_tsv_file: Path) -> None:
         """Test filtering to include multiple selected tickers.
@@ -264,9 +257,7 @@ class TestFilterData:
         assert set(filtered["Ticker"].unique()) == {TICKER_AAPL, TICKER_MSFT}
         assert len(filtered) == SAMPLE_DATA_GROUPED_COUNT
 
-    def test_filter_with_nonexistent_ticker_returns_empty(
-        self, sample_tsv_file: Path
-    ) -> None:
+    def test_filter_with_nonexistent_ticker_returns_empty(self, sample_tsv_file: Path) -> None:
         """Test filtering for non-existent ticker returns empty DataFrame."""
         # Arrange
         processor = DividendDataProcessor(str(sample_tsv_file))
@@ -277,9 +268,7 @@ class TestFilterData:
         # Assert
         assert filtered.empty
 
-    def test_filter_with_empty_ticker_list_returns_empty(
-        self, sample_tsv_file: Path
-    ) -> None:
+    def test_filter_with_empty_ticker_list_returns_empty(self, sample_tsv_file: Path) -> None:
         """Test filtering with empty selection returns empty DataFrame.
 
         An empty ticker list has no rows to match.
@@ -367,15 +356,13 @@ class TestEdgeCases:
         assert processor.df is not None
 
     @pytest.mark.parametrize(
-        "net_div,tax,scenario",
+        ("net_div", "tax", "scenario"),
         [
             (EXTREME_ZERO, EXTREME_ZERO, "zero dividend"),
             (EXTREME_NEGATIVE, EXTREME_ZERO, "negative dividend"),
         ],
     )
-    def test_handles_extreme_numeric_values(
-        self, net_div: float, tax: float, scenario: str, tmp_path: Path
-    ) -> None:
+    def test_handles_extreme_numeric_values(self, net_div: float, tax: float, scenario: str, tmp_path: Path) -> None:
         """Test processor behavior with boundary numeric values.
 
         Extreme values might be invalid (e.g., negative dividends) but

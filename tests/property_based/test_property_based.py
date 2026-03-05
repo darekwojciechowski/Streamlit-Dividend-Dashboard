@@ -21,13 +21,11 @@ Testing conventions (2026):
     - RuleBasedStateMachine validates stateful ColorManager behavior.
 """
 
+import itertools
 import re
+from typing import ClassVar
+
 import pytest
-
-from hypothesis import HealthCheck, assume, example, given, note, settings
-from hypothesis import strategies as st
-from hypothesis.stateful import RuleBasedStateMachine, initialize, invariant, rule
-
 from app.utils.color_manager import (
     ColorManager,
     adjust_gradient,
@@ -37,7 +35,9 @@ from app.utils.color_manager import (
     rgb_to_hex,
 )
 from app.utils.dividend_calculator import DividendCalculator
-
+from hypothesis import HealthCheck, assume, example, given, note, settings
+from hypothesis import strategies as st
+from hypothesis.stateful import RuleBasedStateMachine, initialize, invariant, rule
 
 # ---------------------------------------------------------------------------
 # Shared Hypothesis strategies
@@ -94,11 +94,7 @@ def ticker_strategy(draw: st.DrawFn) -> str:
     Returns:
         A ticker string such as ``AAPL.US`` or ``PKO.PL``.
     """
-    symbol = draw(
-        st.text(
-            alphabet=st.characters(whitelist_categories=("Lu",)), min_size=1, max_size=5
-        )
-    )
+    symbol = draw(st.text(alphabet=st.characters(whitelist_categories=("Lu",)), min_size=1, max_size=5))
     country = draw(st.sampled_from(["US", "PL", "EU", ""]))
     return f"{symbol}.{country}" if country else symbol
 
@@ -116,11 +112,7 @@ def positive_dividend_strategy(draw: st.DrawFn) -> float:
     Returns:
         A positive float representing an initial dividend amount.
     """
-    return draw(
-        st.floats(
-            min_value=0.01, max_value=1_000_000.0, allow_nan=False, allow_infinity=False
-        )
-    )
+    return draw(st.floats(min_value=0.01, max_value=1_000_000.0, allow_nan=False, allow_infinity=False))
 
 
 @st.composite
@@ -137,11 +129,7 @@ def growth_rate_strategy(draw: st.DrawFn) -> float:
     Returns:
         A float growth-rate percentage such as -5.0 or 12.5.
     """
-    return draw(
-        st.floats(
-            min_value=-99.0, max_value=500.0, allow_nan=False, allow_infinity=False
-        )
-    )
+    return draw(st.floats(min_value=-99.0, max_value=500.0, allow_nan=False, allow_infinity=False))
 
 
 # ===========================================================================
@@ -161,7 +149,7 @@ class TestGetCurrencySymbol:
         - Unknown or missing country code defaults to ``$``.
     """
 
-    VALID_SYMBOLS = {"$", "PLN", "€"}
+    VALID_SYMBOLS: ClassVar[set[str]] = {"$", "PLN", "€"}
 
     @given(ticker_strategy())
     @settings(max_examples=300, suppress_health_check=[HealthCheck.too_slow])
@@ -173,15 +161,9 @@ class TestGetCurrencySymbol:
         """
         note(f"ticker = {ticker!r}")
         result = DividendCalculator.get_currency_symbol(ticker)
-        assert result in self.VALID_SYMBOLS, (
-            f"Unexpected symbol {result!r} for ticker {ticker!r}"
-        )
+        assert result in self.VALID_SYMBOLS, f"Unexpected symbol {result!r} for ticker {ticker!r}"
 
-    @given(
-        st.text(
-            alphabet=st.characters(whitelist_categories=("Lu",)), min_size=1, max_size=6
-        )
-    )
+    @given(st.text(alphabet=st.characters(whitelist_categories=("Lu",)), min_size=1, max_size=6))
     @settings(max_examples=100)
     def test_us_ticker_returns_dollar(self, symbol: str) -> None:
         """Any ``SYMBOL.US`` ticker returns ``$``.
@@ -192,11 +174,7 @@ class TestGetCurrencySymbol:
         ticker = f"{symbol}.US"
         assert DividendCalculator.get_currency_symbol(ticker) == "$"
 
-    @given(
-        st.text(
-            alphabet=st.characters(whitelist_categories=("Lu",)), min_size=1, max_size=6
-        )
-    )
+    @given(st.text(alphabet=st.characters(whitelist_categories=("Lu",)), min_size=1, max_size=6))
     @settings(max_examples=100)
     def test_pl_ticker_returns_pln(self, symbol: str) -> None:
         """Any ``SYMBOL.PL`` ticker returns ``PLN``.
@@ -207,11 +185,7 @@ class TestGetCurrencySymbol:
         ticker = f"{symbol}.PL"
         assert DividendCalculator.get_currency_symbol(ticker) == "PLN"
 
-    @given(
-        st.text(
-            alphabet=st.characters(whitelist_categories=("Lu",)), min_size=1, max_size=6
-        )
-    )
+    @given(st.text(alphabet=st.characters(whitelist_categories=("Lu",)), min_size=1, max_size=6))
     @settings(max_examples=100)
     def test_eu_ticker_returns_euro(self, symbol: str) -> None:
         """Any ``SYMBOL.EU`` ticker returns ``€``.
@@ -259,9 +233,7 @@ class TestCalculateProjections:
         st.integers(min_value=1, max_value=50),
     )
     @settings(max_examples=200)
-    def test_row_count_equals_years(
-        self, initial: float, rate: float, years: int
-    ) -> None:
+    def test_row_count_equals_years(self, initial: float, rate: float, years: int) -> None:
         """DataFrame returned has exactly ``years`` rows.
 
         Args:
@@ -278,9 +250,7 @@ class TestCalculateProjections:
         st.integers(min_value=1, max_value=50),
     )
     @settings(max_examples=200)
-    def test_required_columns_present(
-        self, initial: float, rate: float, years: int
-    ) -> None:
+    def test_required_columns_present(self, initial: float, rate: float, years: int) -> None:
         """Output DataFrame always contains 'Year' and 'Projected Dividend' columns.
 
         Args:
@@ -298,9 +268,7 @@ class TestCalculateProjections:
         st.integers(min_value=1, max_value=50),
     )
     @settings(max_examples=200)
-    def test_first_value_equals_initial_dividend(
-        self, initial: float, rate: float, years: int
-    ) -> None:
+    def test_first_value_equals_initial_dividend(self, initial: float, rate: float, years: int) -> None:
         """The first projected dividend equals ``initial_dividend`` (year 0 growth = 0).
 
         Args:
@@ -313,15 +281,11 @@ class TestCalculateProjections:
 
     @given(
         positive_dividend_strategy(),
-        st.floats(
-            min_value=0.1, max_value=500.0, allow_nan=False, allow_infinity=False
-        ),
+        st.floats(min_value=0.1, max_value=500.0, allow_nan=False, allow_infinity=False),
         st.integers(min_value=2, max_value=30),
     )
     @settings(max_examples=200)
-    def test_positive_growth_monotonically_increasing(
-        self, initial: float, rate: float, years: int
-    ) -> None:
+    def test_positive_growth_monotonically_increasing(self, initial: float, rate: float, years: int) -> None:
         """With positive growth rate the dividend sequence is strictly increasing.
 
         Args:
@@ -331,20 +295,16 @@ class TestCalculateProjections:
         """
         df = DividendCalculator.calculate_projections(initial, rate, years)
         dividends = df["Projected Dividend"].tolist()
-        for prev, curr in zip(dividends, dividends[1:]):
+        for prev, curr in itertools.pairwise(dividends):
             assert curr > prev, f"Non-increasing: {prev} -> {curr} (rate={rate})"
 
     @given(
         positive_dividend_strategy(),
-        st.floats(
-            min_value=-99.0, max_value=-0.1, allow_nan=False, allow_infinity=False
-        ),
+        st.floats(min_value=-99.0, max_value=-0.1, allow_nan=False, allow_infinity=False),
         st.integers(min_value=2, max_value=30),
     )
     @settings(max_examples=200)
-    def test_negative_growth_monotonically_decreasing(
-        self, initial: float, rate: float, years: int
-    ) -> None:
+    def test_negative_growth_monotonically_decreasing(self, initial: float, rate: float, years: int) -> None:
         """With negative growth rate the dividend sequence is strictly decreasing.
 
         Args:
@@ -354,7 +314,7 @@ class TestCalculateProjections:
         """
         df = DividendCalculator.calculate_projections(initial, rate, years)
         dividends = df["Projected Dividend"].tolist()
-        for prev, curr in zip(dividends, dividends[1:]):
+        for prev, curr in itertools.pairwise(dividends):
             assert curr < prev, f"Non-decreasing: {prev} -> {curr} (rate={rate})"
 
     @given(positive_dividend_strategy(), st.integers(min_value=1, max_value=50))
@@ -368,9 +328,7 @@ class TestCalculateProjections:
         """
         df = DividendCalculator.calculate_projections(initial, 0.0, years)
         for value in df["Projected Dividend"]:
-            assert abs(value - initial) < 1e-9, (
-                f"Expected constant {initial}, got {value}"
-            )
+            assert abs(value - initial) < 1e-9, f"Expected constant {initial}, got {value}"
 
     @given(
         positive_dividend_strategy(),
@@ -378,9 +336,7 @@ class TestCalculateProjections:
         st.integers(min_value=1, max_value=50),
     )
     @settings(max_examples=200)
-    def test_years_column_is_consecutive(
-        self, initial: float, rate: float, years: int
-    ) -> None:
+    def test_years_column_is_consecutive(self, initial: float, rate: float, years: int) -> None:
         """Year column is a consecutive sequence without gaps.
 
         Args:
@@ -420,9 +376,7 @@ class TestCalculateGrowthInfo:
         st.integers(min_value=1, max_value=50),
     )
     @settings(max_examples=300)
-    def test_final_dividend_matches_formula(
-        self, initial: float, rate: float, years: int
-    ) -> None:
+    def test_final_dividend_matches_formula(self, initial: float, rate: float, years: int) -> None:
         """``final_dividend`` satisfies the compound growth formula.
 
         The invariant: ``final = initial * (1 + rate/100) ^ (years - 1)``.
@@ -443,9 +397,7 @@ class TestCalculateGrowthInfo:
         st.integers(min_value=1, max_value=50),
     )
     @settings(max_examples=200)
-    def test_total_increase_equals_final_minus_initial(
-        self, initial: float, rate: float, years: int
-    ) -> None:
+    def test_total_increase_equals_final_minus_initial(self, initial: float, rate: float, years: int) -> None:
         """``total_increase == final_dividend - initial_dividend``.
 
         Args:
@@ -494,15 +446,11 @@ class TestCalculateGrowthInfo:
 
     @given(
         positive_dividend_strategy(),
-        st.floats(
-            min_value=0.001, max_value=500.0, allow_nan=False, allow_infinity=False
-        ),
+        st.floats(min_value=0.001, max_value=500.0, allow_nan=False, allow_infinity=False),
         st.integers(min_value=2, max_value=30),
     )
     @settings(max_examples=100)
-    def test_positive_rate_positive_growth_pct(
-        self, initial: float, rate: float, years: int
-    ) -> None:
+    def test_positive_rate_positive_growth_pct(self, initial: float, rate: float, years: int) -> None:
         """Positive growth rate always yields positive ``total_growth_pct``.
 
         Args:
@@ -545,9 +493,7 @@ class TestHexToRgba:
 
     # Matches any valid Python float representation in the alpha slot, including
     # scientific notation (e.g. 1e-35) that Python produces for very small values.
-    _RGBA_PATTERN = re.compile(
-        r"rgba\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3}),\s*([+-]?[\d.]+(?:[eE][+-]?\d+)?)\)"
-    )
+    _RGBA_PATTERN = re.compile(r"rgba\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3}),\s*([+-]?[\d.]+(?:[eE][+-]?\d+)?)\)")
 
     @given(
         hex_color_strategy(),
@@ -569,9 +515,7 @@ class TestHexToRgba:
         """
         result = hex_to_rgba(color, alpha)
         note(f"hex_to_rgba({color!r}, {alpha}) = {result!r}")
-        assert self._RGBA_PATTERN.fullmatch(result), (
-            f"Not a valid rgba string: {result!r}"
-        )
+        assert self._RGBA_PATTERN.fullmatch(result), f"Not a valid rgba string: {result!r}"
 
     @given(
         hex_color_strategy(),
@@ -677,9 +621,7 @@ class TestRgbToHex:
         match = rgba_pattern.fullmatch(rgba_result)
         assert match is not None
 
-        for i, (orig, out) in enumerate(
-            zip(original_values, [int(match.group(j)) for j in range(1, 4)])
-        ):
+        for i, (orig, out) in enumerate(zip(original_values, [int(match.group(j)) for j in range(1, 4)], strict=False)):
             assert orig == out, f"Channel {i}: original={orig}, roundtrip={out}"
 
 
@@ -712,9 +654,7 @@ class TestAdjustGradient:
         """
         result = adjust_gradient(color)
         note(f"adjust_gradient({color!r}) = {result!r}")
-        assert self._RGB_PATTERN.fullmatch(result), (
-            f"Not a valid rgb string: {result!r}"
-        )
+        assert self._RGB_PATTERN.fullmatch(result), f"Not a valid rgb string: {result!r}"
 
     @given(rgb_color_strategy())
     @settings(max_examples=300)
@@ -725,9 +665,7 @@ class TestAdjustGradient:
             color: An ``rgb(R, G, B)`` color string.
         """
         result = adjust_gradient(color)
-        assert self._RGB_PATTERN.fullmatch(result), (
-            f"Not a valid rgb string: {result!r}"
-        )
+        assert self._RGB_PATTERN.fullmatch(result), f"Not a valid rgb string: {result!r}"
 
     @given(hex_color_strategy())
     @settings(max_examples=300)
@@ -849,7 +787,7 @@ class TestDetermineTextColorForDropdown:
         - Consistency with ``apply_wcag_ui_standards``: light bg → black text.
     """
 
-    VALID_TEXT_COLORS = {"#000000", "#FFFFFF"}
+    VALID_TEXT_COLORS: ClassVar[set[str]] = {"#000000", "#FFFFFF"}
 
     @given(hex_color_strategy())
     @settings(max_examples=300)
@@ -931,9 +869,7 @@ class TestColorManagerGenerateColors:
         result = manager.generate_colors_for_tickers(tickers)
         for ticker, color in result.items():
             note(f"{ticker}: {color!r}")
-            assert re.fullmatch(r"#[0-9A-Fa-f]{6}", color), (
-                f"Invalid hex color {color!r} for ticker {ticker!r}"
-            )
+            assert re.fullmatch(r"#[0-9A-Fa-f]{6}", color), f"Invalid hex color {color!r} for ticker {ticker!r}"
 
     @given(st.lists(ticker_strategy(), min_size=1, max_size=20, unique=True))
     @settings(max_examples=100, suppress_health_check=[HealthCheck.too_slow])
@@ -956,9 +892,7 @@ class TestColorManagerGenerateColors:
 
     @given(st.lists(ticker_strategy(), min_size=2, max_size=10, unique=True))
     @settings(max_examples=100, suppress_health_check=[HealthCheck.too_slow])
-    def test_subset_tickers_preserves_color_assignment(
-        self, tickers: list[str]
-    ) -> None:
+    def test_subset_tickers_preserves_color_assignment(self, tickers: list[str]) -> None:
         """A subset of tickers that appears in sorted order gets the same colors as the full set.
 
         Because colors are assigned by sorted index, the Nth ticker in a sorted list always
@@ -1011,7 +945,7 @@ class ColorManagerMachine(RuleBasedStateMachine):
     from app.styles.colors_and_styles import BASE_COLORS as _BASE
 
     _UNIQUE_COLOR_COUNT: int = len(set(_BASE)) if _BASE else 0
-    _ALL_COLORS: set[str] = set(_BASE)
+    _ALL_COLORS: ClassVar[set[str]] = set(_BASE)
 
     def __init__(self) -> None:
         """Initialize machine with a fresh ``ColorManager`` instance."""
@@ -1044,12 +978,8 @@ class ColorManagerMachine(RuleBasedStateMachine):
         assume(len(self.manager.used_colors) < self._UNIQUE_COLOR_COUNT)
 
         color = self.manager.get_random_base_color()
-        assert isinstance(color, str) and color, (
-            f"Expected non-empty str, got {color!r}"
-        )
-        assert color in self._ALL_COLORS, (
-            f"Returned color {color!r} is not in BASE_COLORS"
-        )
+        assert isinstance(color, str) and color, f"Expected non-empty str, got {color!r}"
+        assert color in self._ALL_COLORS, f"Returned color {color!r} is not in BASE_COLORS"
         self.call_count += 1
 
     @invariant()
@@ -1063,13 +993,10 @@ class ColorManagerMachine(RuleBasedStateMachine):
 
         if _BASE_COLORS:
             assert len(self.manager.used_colors) <= len(_BASE_COLORS), (
-                f"used_colors length {len(self.manager.used_colors)} exceeds "
-                f"BASE_COLORS length {len(_BASE_COLORS)}"
+                f"used_colors length {len(self.manager.used_colors)} exceeds BASE_COLORS length {len(_BASE_COLORS)}"
             )
 
 
 # Expose the stateful machine as a standard pytest test class
 TestColorManagerMachine = ColorManagerMachine.TestCase
-TestColorManagerMachine.__doc__ = (
-    "Hypothesis-generated stateful tests for ColorManager color cycling."
-)
+TestColorManagerMachine.__doc__ = "Hypothesis-generated stateful tests for ColorManager color cycling."

@@ -38,7 +38,6 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-
 from app.utils.color_manager import (
     ColorManager,
     adjust_gradient,
@@ -208,9 +207,7 @@ class TestDividendCalculatorPerformance:
         [0.0, 1.0, 7.0, 15.0, -5.0],
         ids=["flat", "low", "moderate", "high", "negative"],
     )
-    def test_projections_various_growth_rates(
-        self, benchmark: pytest.fixture, growth_rate: float
-    ) -> None:
+    def test_projections_various_growth_rates(self, benchmark: pytest.fixture, growth_rate: float) -> None:
         """Benchmark: projection latency is rate-independent.
 
         Growth rate changes only the values, not the algorithmic complexity.
@@ -248,9 +245,7 @@ class TestDividendCalculatorPerformance:
         assert "total_growth_pct" in result
 
     @pytest.mark.parametrize("years", [1, 10, 30, 50], ids=["1y", "10y", "30y", "50y"])
-    def test_growth_info_scaling_with_years(
-        self, benchmark: pytest.fixture, years: int
-    ) -> None:
+    def test_growth_info_scaling_with_years(self, benchmark: pytest.fixture, years: int) -> None:
         """Benchmark: growth_info is O(1) regardless of year count.
 
         ``calculate_growth_info`` uses a single power-law formula – execution
@@ -277,9 +272,7 @@ class TestDividendCalculatorPerformance:
         ["AAPL.US", "PKO.PL", "SAP.EU", "UNKNOWN.XX", "NODOT"],
         ids=["us", "pl", "eu", "unknown", "no-dot"],
     )
-    def test_currency_symbol_lookup(
-        self, benchmark: pytest.fixture, ticker: str
-    ) -> None:
+    def test_currency_symbol_lookup(self, benchmark: pytest.fixture, ticker: str) -> None:
         """Benchmark: currency symbol inference is effectively O(1).
 
         Args:
@@ -301,16 +294,12 @@ class TestDividendCalculatorPerformance:
         regardless of the year count.
         """
         tracemalloc.start()
-        DividendCalculator.calculate_projections(
-            _INITIAL_DIVIDEND, _GROWTH_RATE, _YEARS_LONG
-        )
+        DividendCalculator.calculate_projections(_INITIAL_DIVIDEND, _GROWTH_RATE, _YEARS_LONG)
         _, peak_bytes = tracemalloc.get_traced_memory()
         tracemalloc.stop()
 
         peak_kib = peak_bytes / 1024
-        assert peak_kib < 256, (
-            f"Projection allocated {peak_kib:.1f} KiB – expected < 256 KiB"
-        )
+        assert peak_kib < 256, f"Projection allocated {peak_kib:.1f} KiB – expected < 256 KiB"
 
 
 # ===========================================================================
@@ -329,12 +318,8 @@ class TestDataProcessorPerformance:
     # Load from disk
     # -----------------------------------------------------------------------
 
-    @pytest.mark.parametrize(
-        "n_rows", _SCALE_ROWS, ids=[f"{n}rows" for n in _SCALE_ROWS]
-    )
-    def test_load_and_clean_data(
-        self, benchmark: pytest.fixture, tmp_path: Path, n_rows: int
-    ) -> None:
+    @pytest.mark.parametrize("n_rows", _SCALE_ROWS, ids=[f"{n}rows" for n in _SCALE_ROWS])
+    def test_load_and_clean_data(self, benchmark: pytest.fixture, tmp_path: Path, n_rows: int) -> None:
         """Benchmark: full load + clean cycle for portfolios of different sizes.
 
         Args:
@@ -358,9 +343,7 @@ class TestDataProcessorPerformance:
     # filter_data
     # -----------------------------------------------------------------------
 
-    def test_filter_single_ticker(
-        self, benchmark: pytest.fixture, tmp_path: Path
-    ) -> None:
+    def test_filter_single_ticker(self, benchmark: pytest.fixture, tmp_path: Path) -> None:
         """Benchmark: filtering a 1 000-row portfolio down to a single ticker.
 
         Args:
@@ -375,9 +358,7 @@ class TestDataProcessorPerformance:
         result = benchmark(processor.filter_data, ["AAPL.US"])
         assert not result.empty
 
-    def test_filter_all_tickers(
-        self, benchmark: pytest.fixture, tmp_path: Path
-    ) -> None:
+    def test_filter_all_tickers(self, benchmark: pytest.fixture, tmp_path: Path) -> None:
         """Benchmark: filtering passes through the full portfolio unchanged.
 
         Args:
@@ -392,9 +373,7 @@ class TestDataProcessorPerformance:
         result = benchmark(processor.filter_data, _TICKERS_SMALL)
         assert not result.empty
 
-    def test_filter_empty_selection(
-        self, benchmark: pytest.fixture, tmp_path: Path
-    ) -> None:
+    def test_filter_empty_selection(self, benchmark: pytest.fixture, tmp_path: Path) -> None:
         """Benchmark: filter with empty list returns immediately.
 
         Args:
@@ -413,9 +392,7 @@ class TestDataProcessorPerformance:
     # End-to-end pipeline (load → filter → project)
     # -----------------------------------------------------------------------
 
-    def test_full_pipeline_500_rows(
-        self, benchmark: pytest.fixture, tmp_path: Path
-    ) -> None:
+    def test_full_pipeline_500_rows(self, benchmark: pytest.fixture, tmp_path: Path) -> None:
         """Benchmark: full pipeline – load 500 rows, filter, then project.
 
         Simulates one complete render cycle of the dashboard.
@@ -459,9 +436,7 @@ class TestDataProcessorPerformance:
         tracemalloc.stop()
 
         peak_mib = peak_bytes / (1024**2)
-        assert peak_mib < 4, (
-            f"Loading 1 000 rows allocated {peak_mib:.2f} MiB – expected < 4 MiB"
-        )
+        assert peak_mib < 4, f"Loading 1 000 rows allocated {peak_mib:.2f} MiB – expected < 4 MiB"
 
 
 # ===========================================================================
@@ -482,9 +457,7 @@ class TestColorManagerPerformance:
         [_TICKERS_SMALL, _TICKERS_MEDIUM, _TICKERS_LARGE],
         ids=["4-tickers", "50-tickers", "200-tickers"],
     )
-    def test_generate_colors_for_tickers(
-        self, benchmark: pytest.fixture, tickers: list[str]
-    ) -> None:
+    def test_generate_colors_for_tickers(self, benchmark: pytest.fixture, tickers: list[str]) -> None:
         """Benchmark: colour assignment scales linearly with ticker count.
 
         Args:
@@ -498,9 +471,7 @@ class TestColorManagerPerformance:
         if len(tickers) <= 100:
             assert benchmark.stats["mean"] < _MAX_COLOR_GEN_100_SEC
 
-    def test_repeated_color_generation_consistency(
-        self, benchmark: pytest.fixture
-    ) -> None:
+    def test_repeated_color_generation_consistency(self, benchmark: pytest.fixture) -> None:
         """Benchmark: repeated calls with the same tickers are idempotent and fast.
 
         The colour map for a sorted ticker list must be deterministic across
@@ -541,12 +512,8 @@ class TestColorManagerPerformance:
         assert "AAPL.US" in result
         assert "250" in result
 
-    @pytest.mark.parametrize(
-        "n_tiles", [4, 7, 9], ids=["4-tiles", "7-tiles", "9-tiles"]
-    )
-    def test_create_tile_html_batch(
-        self, benchmark: pytest.fixture, n_tiles: int
-    ) -> None:
+    @pytest.mark.parametrize("n_tiles", [4, 7, 9], ids=["4-tiles", "7-tiles", "9-tiles"])
+    def test_create_tile_html_batch(self, benchmark: pytest.fixture, n_tiles: int) -> None:
         """Benchmark: generating HTML for a batch of tiles within colour-pool capacity.
 
         ``BASE_COLORS`` contains 10 unique colours.  Each test is capped at
@@ -616,9 +583,7 @@ class TestColorManagerPerformance:
 
         _ = tiles  # Prevent optimisation
         peak_kib = peak_bytes / 1024
-        assert peak_kib < 1024, (
-            f"50 tiles used {peak_kib:.1f} KiB – expected < 1 024 KiB"
-        )
+        assert peak_kib < 1024, f"50 tiles used {peak_kib:.1f} KiB – expected < 1 024 KiB"
 
 
 # ===========================================================================
@@ -639,9 +604,7 @@ class TestColorUtilsPerformance:
     # -----------------------------------------------------------------------
 
     @pytest.mark.parametrize("hex_color", _SAMPLE_HEX_COLORS)
-    def test_hex_to_rgba_conversion(
-        self, benchmark: pytest.fixture, hex_color: str
-    ) -> None:
+    def test_hex_to_rgba_conversion(self, benchmark: pytest.fixture, hex_color: str) -> None:
         """Benchmark: hex → rgba conversion for all sample colours.
 
         Args:
@@ -659,10 +622,7 @@ class TestColorUtilsPerformance:
         """
 
         def _batch() -> list[str]:
-            return [
-                hex_to_rgba(_SAMPLE_HEX_COLORS[i % len(_SAMPLE_HEX_COLORS)], 0.5)
-                for i in range(200)
-            ]
+            return [hex_to_rgba(_SAMPLE_HEX_COLORS[i % len(_SAMPLE_HEX_COLORS)], 0.5) for i in range(200)]
 
         results = benchmark(_batch)
         assert len(results) == 200
@@ -672,9 +632,7 @@ class TestColorUtilsPerformance:
     # -----------------------------------------------------------------------
 
     @pytest.mark.parametrize("rgb_color", _SAMPLE_RGB_COLORS)
-    def test_rgb_to_hex_conversion(
-        self, benchmark: pytest.fixture, rgb_color: str
-    ) -> None:
+    def test_rgb_to_hex_conversion(self, benchmark: pytest.fixture, rgb_color: str) -> None:
         """Benchmark: rgb → hex conversion for all sample colours.
 
         Args:
@@ -709,7 +667,7 @@ class TestColorUtilsPerformance:
     # -----------------------------------------------------------------------
 
     @pytest.mark.parametrize(
-        "color,expected_light",
+        ("color", "expected_light"),
         [
             ("#FFFFFF", True),
             ("#000000", False),
@@ -739,7 +697,7 @@ class TestColorUtilsPerformance:
     # -----------------------------------------------------------------------
 
     @pytest.mark.parametrize(
-        "bg_color,expected_text",
+        ("bg_color", "expected_text"),
         [
             ("#FFFFFF", "#000000"),
             ("#000000", "#FFFFFF"),
@@ -803,18 +761,13 @@ class TestScalePerformance:
         dividends = [50.0 + i for i in range(100)]
 
         def _project_all() -> list[pd.DataFrame]:
-            return [
-                DividendCalculator.calculate_projections(d, _GROWTH_RATE, _YEARS_MEDIUM)
-                for d in dividends
-            ]
+            return [DividendCalculator.calculate_projections(d, _GROWTH_RATE, _YEARS_MEDIUM) for d in dividends]
 
         results = benchmark.pedantic(_project_all, rounds=5, warmup_rounds=2)
         assert len(results) == 100
         assert all(len(df) == _YEARS_MEDIUM for df in results)
 
-    def test_full_render_cycle_1000_rows(
-        self, benchmark: pytest.fixture, tmp_path: Path
-    ) -> None:
+    def test_full_render_cycle_1000_rows(self, benchmark: pytest.fixture, tmp_path: Path) -> None:
         """Benchmark: complete dashboard render cycle with 1 000-row portfolio.
 
         Covers: load → clean → filter → project → colour assignment.
@@ -839,9 +792,7 @@ class TestScalePerformance:
                 ticker_df = filtered[filtered["Ticker"] == ticker]
                 initial = DividendCalculator.get_initial_dividend(ticker_df)
                 if initial:
-                    projections[ticker] = DividendCalculator.calculate_projections(
-                        initial, _GROWTH_RATE, _YEARS_SHORT
-                    )
+                    projections[ticker] = DividendCalculator.calculate_projections(initial, _GROWTH_RATE, _YEARS_SHORT)
 
             return {"colors": colors, "projections": projections}
 
@@ -863,10 +814,7 @@ class TestScalePerformance:
         """
 
         def _generate_all_tiles() -> list[str]:
-            return [
-                ColorManager().create_tile_html(ticker, 100 + i)
-                for i, ticker in enumerate(_TICKERS_LARGE)
-            ]
+            return [ColorManager().create_tile_html(ticker, 100 + i) for i, ticker in enumerate(_TICKERS_LARGE)]
 
         tiles = benchmark.pedantic(_generate_all_tiles, rounds=5, warmup_rounds=2)
         assert len(tiles) == len(_TICKERS_LARGE)
@@ -898,9 +846,7 @@ class TestScalePerformance:
             ticker_df = filtered[filtered["Ticker"] == ticker]
             initial = DividendCalculator.get_initial_dividend(ticker_df)
             if initial:
-                DividendCalculator.calculate_projections(
-                    initial, _GROWTH_RATE, _YEARS_SHORT
-                )
+                DividendCalculator.calculate_projections(initial, _GROWTH_RATE, _YEARS_SHORT)
 
         _, peak_bytes = tracemalloc.get_traced_memory()
         tracemalloc.stop()

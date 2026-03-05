@@ -86,7 +86,8 @@ class TestColorFormatHandling:
 
         # Assert
         assert result.startswith("rgb(")
-        assert "(" in result and ")" in result
+        assert "(" in result
+        assert ")" in result
 
     def test_rgb_color_format_processed(self) -> None:
         """Test RGB color format is recognized and processed."""
@@ -167,9 +168,7 @@ class TestGradientAdjustment:
             (COLOR_BLACK_SHORT, "black shorthand"),
         ],
     )
-    def test_various_hex_formats_produce_valid_rgb(
-        self, hex_color: tuple[str, str]
-    ) -> None:
+    def test_various_hex_formats_produce_valid_rgb(self, hex_color: tuple[str, str]) -> None:
         """Test gradient adjustment works on various color formats.
 
         Args:
@@ -244,7 +243,7 @@ class TestWCAGLuminanceCalculation:
         assert result is True
 
     @pytest.mark.parametrize(
-        "color,expected_is_light",
+        ("color", "expected_is_light"),
         [
             (COLOR_WHITE, True),  # Pure white
             (COLOR_BLACK, False),  # Pure black
@@ -253,9 +252,7 @@ class TestWCAGLuminanceCalculation:
             (COLOR_BLUE, False),  # Blue has very low luminance (y=0.0722 in RGB)
         ],
     )
-    def test_wcag_classification_standard_colors(
-        self, color: str, expected_is_light: bool
-    ) -> None:
+    def test_wcag_classification_standard_colors(self, color: str, expected_is_light: bool) -> None:
         """Test WCAG classification on standard CSS colors.
 
         Args:
@@ -320,7 +317,7 @@ class TestTextColorDetermination:
         assert result in [TEXT_COLOR_BLACK, TEXT_COLOR_WHITE]
 
     @pytest.mark.parametrize(
-        "bg_color,description",
+        ("bg_color", "description"),
         [
             (COLOR_WHITE, "white"),
             (COLOR_BLACK, "black"),
@@ -329,9 +326,7 @@ class TestTextColorDetermination:
             (COLOR_BLUE, "blue"),
         ],
     )
-    def test_contrast_color_selection_all_backgrounds(
-        self, bg_color: str, description: str
-    ) -> None:
+    def test_contrast_color_selection_all_backgrounds(self, bg_color: str, description: str) -> None:
         """Test text color selection works for all test backgrounds.
 
         Args:

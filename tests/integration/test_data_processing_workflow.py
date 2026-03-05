@@ -9,9 +9,9 @@ Tests verify the complete data flow:
 These tests use real file I/O and actual data processor implementation.
 """
 
-import pytest
 from pathlib import Path
 
+import pytest
 from app.data_processor import DividendDataProcessor
 
 
@@ -93,9 +93,7 @@ class TestDataProcessingWorkflow:
         assert not filtered.empty
         assert set(filtered["Ticker"].unique()) == set(selected)
 
-    def test_filter_returns_empty_for_nonexistent_ticker(
-        self, sample_tsv_file: Path
-    ) -> None:
+    def test_filter_returns_empty_for_nonexistent_ticker(self, sample_tsv_file: Path) -> None:
         """Test filtering for ticker not in data returns empty DataFrame.
 
         Given:
@@ -112,9 +110,7 @@ class TestDataProcessingWorkflow:
         assert filtered is not None
         assert filtered.empty
 
-    def test_filter_with_empty_selection_returns_empty(
-        self, sample_tsv_file: Path
-    ) -> None:
+    def test_filter_with_empty_selection_returns_empty(self, sample_tsv_file: Path) -> None:
         """Test filtering with empty ticker list returns empty DataFrame.
 
         Given:
@@ -131,9 +127,7 @@ class TestDataProcessingWorkflow:
         assert filtered is not None
         assert filtered.empty
 
-    def test_data_remains_unchanged_after_filtering(
-        self, sample_tsv_file: Path
-    ) -> None:
+    def test_data_remains_unchanged_after_filtering(self, sample_tsv_file: Path) -> None:
         """Test that filtering doesn't modify original processor data.
 
         Given:
@@ -154,9 +148,7 @@ class TestDataProcessingWorkflow:
         # Original should be unchanged
         assert len(processor.df) == original_size
 
-    def test_filtered_data_contains_all_required_columns(
-        self, sample_tsv_file: Path
-    ) -> None:
+    def test_filtered_data_contains_all_required_columns(self, sample_tsv_file: Path) -> None:
         """Test that filtered data preserves all required columns.
 
         Given:
@@ -195,9 +187,7 @@ class TestDataCleaningIntegration:
         processor = DividendDataProcessor(str(sample_tsv_file))
 
         # Values should be numeric floats, not strings with ' USD'
-        assert all(
-            isinstance(val, (int, float)) for val in processor.df["Net Dividend"]
-        )
+        assert all(isinstance(val, int | float) for val in processor.df["Net Dividend"])
 
         # Check no ' USD' in values (would fail if not cleaned)
         df_as_str = processor.df.astype(str)
@@ -216,9 +206,7 @@ class TestDataCleaningIntegration:
         processor = DividendDataProcessor(str(sample_tsv_file))
 
         # Values should be numeric floats, not strings with '%'
-        assert all(
-            isinstance(val, (int, float)) for val in processor.df["Tax Collected"]
-        )
+        assert all(isinstance(val, int | float) for val in processor.df["Tax Collected"])
 
         # Check no '%' in values (would fail if not cleaned)
         df_as_str = processor.df.astype(str)

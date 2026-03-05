@@ -1,8 +1,9 @@
 """Nivo.js donut chart component rendered via streamlit-elements."""
 
-from streamlit_elements import elements, mui
-from streamlit_elements import nivo
 import random
+
+from streamlit_elements import elements, mui, nivo
+
 from ..utils.color_manager import rgb_to_hex
 
 
@@ -59,7 +60,7 @@ class NivoPieChart:
                 {
                     **item,
                     "color": colors.get(item["id"], "#636EFA"),
-                    "pattern": random.choice(self.patterns)["id"],
+                    "pattern": random.choice(self.patterns)["id"],  # noqa: S311
                 }
                 for item in data
             ]
@@ -72,7 +73,7 @@ class NivoPieChart:
                         if item.get("color", "#636EFA").startswith("rgb")
                         else item.get("color", "#636EFA")
                     ),
-                    "pattern": random.choice(self.patterns)["id"],
+                    "pattern": random.choice(self.patterns)["id"],  # noqa: S311
                 }
                 for item in data
             ]
@@ -95,10 +96,7 @@ class NivoPieChart:
             "arcLabelsSkipAngle": 360,  # Skip all arc labels
             "legends": [],
             "defs": self.patterns,
-            "fill": [
-                {"match": {"id": item["id"]}, "id": item["pattern"]}
-                for item in self.data
-            ],
+            "fill": [{"match": {"id": item["id"]}, "id": item["pattern"]} for item in self.data],
             "theme": {
                 "tooltip": {
                     "container": {
@@ -120,13 +118,15 @@ class NivoPieChart:
 
     def render(self):
         """Render the pie chart."""
-        with elements("nivo_pie_chart"):
-            with mui.Box(
+        with (
+            elements("nivo_pie_chart"),
+            mui.Box(
                 sx={
                     "height": self.height,
                     "width": "100%",
                     "minHeight": "300px",
                     "maxWidth": "100%",
                 }
-            ):
-                nivo.Pie(data=self.data, colors={"datum": "data.color"}, **self.config)
+            ),
+        ):
+            nivo.Pie(data=self.data, colors={"datum": "data.color"}, **self.config)
