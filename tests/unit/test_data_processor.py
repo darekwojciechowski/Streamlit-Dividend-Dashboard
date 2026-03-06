@@ -120,9 +120,9 @@ class TestDataCleaning:
             float,
             "float64",
         ], f"Net Dividend should be numeric, got {processor.df['Net Dividend'].dtype}"
-        assert processor.df["Net Dividend"].iloc[0] == DIVIDEND_50_USD, (
-            f"First dividend should be {DIVIDEND_50_USD}, got {processor.df['Net Dividend'].iloc[0]}"
-        )
+        assert (
+            processor.df["Net Dividend"].iloc[0] == DIVIDEND_50_USD
+        ), f"First dividend should be {DIVIDEND_50_USD}, got {processor.df['Net Dividend'].iloc[0]}"
         # All values should be positive (no negative dividends in clean data)
         assert all(processor.df["Net Dividend"] > 0), "All dividends should be positive"
 
@@ -236,9 +236,9 @@ class TestFilterData:
         # Assert
         assert not filtered.empty, f"Filter for {TICKER_AAPL} should not be empty"
         assert all(filtered["Ticker"] == TICKER_AAPL), f"All filtered rows should have ticker {TICKER_AAPL}"
-        assert len(filtered) == SAMPLE_DATA_AAPL_COUNT, (
-            f"Expected {SAMPLE_DATA_AAPL_COUNT} rows for {TICKER_AAPL}, got {len(filtered)}"
-        )
+        assert (
+            len(filtered) == SAMPLE_DATA_AAPL_COUNT
+        ), f"Expected {SAMPLE_DATA_AAPL_COUNT} rows for {TICKER_AAPL}, got {len(filtered)}"
 
     def test_filter_by_multiple_tickers(self, sample_tsv_file: Path) -> None:
         """Test filtering to include multiple selected tickers.
