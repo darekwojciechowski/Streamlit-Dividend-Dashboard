@@ -9,7 +9,7 @@
 Interactive dashboard for analyzing stock dividend portfolios and projecting future growth. Built with `Streamlit`, `Pandas`, and `Plotly`, this application demonstrates modern data visualization techniques and financial modeling in Python.
 
 <div align="center">
-  
+
 ### 🚀 <a href="https://app-dividend-dashboard-mvywmc9s2qdpkgfdgsccsa.streamlit.app/" style="color: #7c3aed; text-decoration: none; font-weight: bold;">View Live Dashboard</a> 🚀
 
 </div>
