@@ -68,5 +68,5 @@ Run linting with auto-fix and formatting using Ruff:
 
 ```bash
 poetry run ruff check --fix .
-poetry run ruff format .
+poetry run ruff format --check .
 ```
