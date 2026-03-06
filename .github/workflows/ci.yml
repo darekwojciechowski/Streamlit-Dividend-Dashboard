@@ -30,9 +30,13 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
 
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
@@ -57,6 +61,17 @@ jobs:
 
       - name: Ruff lint
         run: poetry run ruff check .
+
+      - name: Auto-format with ruff
+        if: github.event_name == 'pull_request'
+        run: |
+          poetry run ruff format .
+          if ! git diff --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git commit -am "style: auto-format with ruff"
+            git push
+          fi
 
       - name: Ruff format check
         run: poetry run ruff format --check .
