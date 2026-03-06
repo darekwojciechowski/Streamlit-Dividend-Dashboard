@@ -180,9 +180,9 @@ class TestDividendCalculatorBoundaryConditions:
         # Verify declining values
         dividends = result["Projected Dividend"].values
         for i in range(len(dividends) - 1):
-            assert (
-                dividends[i + 1] < dividends[i]
-            ), f"With negative growth, dividends should decline. Got {dividends[i]} -> {dividends[i + 1]}"
+            assert dividends[i + 1] < dividends[i], (
+                f"With negative growth, dividends should decline. Got {dividends[i]} -> {dividends[i + 1]}"
+            )
 
     def test_one_year_projection(self) -> None:
         """Test projection for exactly 1 year."""
@@ -213,9 +213,9 @@ class TestDividendCalculatorBoundaryConditions:
         assert all(result["Projected Dividend"] > 0), "All projections should be positive"
         # Verify exponential growth (final should be much larger than initial)
         final_dividend = result["Projected Dividend"].iloc[-1]
-        assert (
-            final_dividend > initial * 10
-        ), f"100 years of 7% growth should increase significantly. Initial: {initial}, Final: {final_dividend}"
+        assert final_dividend > initial * 10, (
+            f"100 years of 7% growth should increase significantly. Initial: {initial}, Final: {final_dividend}"
+        )
 
     def test_very_high_growth_rate(self) -> None:
         """Test projection with unrealistic but valid high growth rate."""

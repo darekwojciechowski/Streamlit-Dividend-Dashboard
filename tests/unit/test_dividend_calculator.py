@@ -118,9 +118,9 @@ class TestCurrencySymbolInference:
         result = DividendCalculator.get_currency_symbol(ticker)
 
         # Assert
-        assert (
-            result == expected_currency
-        ), f"Failed for {country}: {ticker} - expected {expected_currency}, got {result}"
+        assert result == expected_currency, (
+            f"Failed for {country}: {ticker} - expected {expected_currency}, got {result}"
+        )
 
     def test_get_currency_symbol_callable_as_static_method(self) -> None:
         """Test that get_currency_symbol is truly static (no instance needed).
@@ -380,9 +380,9 @@ class TestDividendProjections:
         # Assert
         _assert_projection_structure(result, years)
         # First year should equal initial
-        assert (
-            result["Projected Dividend"].iloc[0] == initial
-        ), f"Year 1 projection should equal initial ({initial}), got {result['Projected Dividend'].iloc[0]}"
+        assert result["Projected Dividend"].iloc[0] == initial, (
+            f"Year 1 projection should equal initial ({initial}), got {result['Projected Dividend'].iloc[0]}"
+        )
 
 
 @pytest.mark.unit
