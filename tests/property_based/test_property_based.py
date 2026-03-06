@@ -347,9 +347,9 @@ class TestCalculateProjections:
         df = DividendCalculator.calculate_projections(initial, rate, years)
         year_values = df["Year"].tolist()
         for i in range(len(year_values) - 1):
-            assert (
-                year_values[i + 1] - year_values[i] == 1
-            ), f"Year gap detected: {year_values[i]} → {year_values[i + 1]}"
+            assert year_values[i + 1] - year_values[i] == 1, (
+                f"Year gap detected: {year_values[i]} → {year_values[i + 1]}"
+            )
 
 
 # ===========================================================================
@@ -992,9 +992,9 @@ class ColorManagerMachine(RuleBasedStateMachine):
         from app.styles.colors_and_styles import BASE_COLORS as _BASE_COLORS
 
         if _BASE_COLORS:
-            assert len(self.manager.used_colors) <= len(
-                _BASE_COLORS
-            ), f"used_colors length {len(self.manager.used_colors)} exceeds BASE_COLORS length {len(_BASE_COLORS)}"
+            assert len(self.manager.used_colors) <= len(_BASE_COLORS), (
+                f"used_colors length {len(self.manager.used_colors)} exceeds BASE_COLORS length {len(_BASE_COLORS)}"
+            )
 
 
 # Expose the stateful machine as a standard pytest test class
