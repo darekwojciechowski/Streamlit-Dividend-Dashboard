@@ -978,7 +978,8 @@ class ColorManagerMachine(RuleBasedStateMachine):
         assume(len(self.manager.used_colors) < self._UNIQUE_COLOR_COUNT)
 
         color = self.manager.get_random_base_color()
-        assert isinstance(color, str) and color, f"Expected non-empty str, got {color!r}"
+        assert isinstance(color, str), f"Expected str, got {type(color)}"
+        assert color, f"Expected non-empty str, got {color!r}"
         assert color in self._ALL_COLORS, f"Returned color {color!r} is not in BASE_COLORS"
         self.call_count += 1
 
