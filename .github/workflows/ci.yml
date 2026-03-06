@@ -39,7 +39,7 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Set up Python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
@@ -50,7 +50,7 @@ jobs:
           virtualenvs-in-project: true
 
       - name: Cache Poetry virtualenv
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .venv
           key: venv-lint-${{ runner.os }}-3.12-${{ hashFiles('poetry.lock') }}
@@ -87,7 +87,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
@@ -98,7 +98,7 @@ jobs:
           virtualenvs-in-project: true
 
       - name: Cache Poetry virtualenv
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .venv
           key: venv-typecheck-${{ runner.os }}-3.12-${{ hashFiles('poetry.lock') }}
@@ -126,7 +126,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -137,7 +137,7 @@ jobs:
           virtualenvs-in-project: true
 
       - name: Cache Poetry virtualenv
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .venv
           key: venv-test-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}
@@ -165,13 +165,13 @@ jobs:
       - name: Coverage summary
         if: matrix.python-version == '3.12'
         run: |
-          echo "## 📊 Coverage Report" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Coverage Report" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           poetry run coverage report --format=markdown >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload coverage artifact
         if: matrix.python-version == '3.12'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-report
           path: coverage.xml
@@ -188,7 +188,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python 3.12
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
@@ -199,7 +199,7 @@ jobs:
           virtualenvs-in-project: true
 
       - name: Cache Poetry virtualenv
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .venv
           key: venv-security-${{ runner.os }}-3.12-${{ hashFiles('poetry.lock') }}
@@ -231,11 +231,11 @@ jobs:
                 "${{ needs.type-check.result }}" != "success" ||
                 "${{ needs.test.result }}" != "success" ||
                 "${{ needs.security.result }}" != "success" ]]; then
-            echo "❌ One or more quality checks failed."
+            echo "One or more quality checks failed."
             echo "  lint:       ${{ needs.lint.result }}"
             echo "  type-check: ${{ needs.type-check.result }}"
             echo "  test:       ${{ needs.test.result }}"
             echo "  security:   ${{ needs.security.result }}"
             exit 1
           fi
-          echo "✅ All quality checks passed."
+          echo "All quality checks passed."
