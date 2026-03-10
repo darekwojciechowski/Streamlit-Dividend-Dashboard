@@ -389,7 +389,7 @@ class TestEdgeCases:
         try:
             processor = DividendDataProcessor(str(file_path))
             assert processor.df is not None
-        except (ValueError, RuntimeError):
+        except ValueError, RuntimeError:
             # Acceptable to reject invalid extreme values
             pass
 
