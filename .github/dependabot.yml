@@ -1,8 +1,8 @@
 version: 2
 
 updates:
-  # Python dependencies (Poetry / pyproject.toml)
-  - package-ecosystem: "poetry"
+  # Python dependencies (pip / requirements.txt)
+  - package-ecosystem: "pip"
     directory: "/"
     schedule:
       interval: "weekly"
