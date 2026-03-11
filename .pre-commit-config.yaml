@@ -2,6 +2,9 @@
 # Install: `pre-commit install`
 # Manual run: `pre-commit run --all-files`
 
+default_language_version:
+  python: python3.14
+
 repos:
   # General file hygiene
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -23,14 +26,12 @@ repos:
         args: [--fix, --exit-non-zero-on-fix]
       - id: ruff-format
 
-  # Mypy — static type checking
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.19.1
+  # Mypy — static type checking (uses Poetry env to match CI exactly)
+  - repo: local
     hooks:
       - id: mypy
-        additional_dependencies:
-          - pydantic-settings>=2.0.0
-          - pandas-stubs>=2.2.0
-        args: [--config-file=pyproject.toml]
+        name: mypy
+        entry: poetry run mypy app/
+        language: system
         pass_filenames: false
-        entry: mypy app/
+        types: [python]
