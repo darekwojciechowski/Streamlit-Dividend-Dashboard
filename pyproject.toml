@@ -44,6 +44,7 @@ pytest-benchmark = ">=5.0.0,<6.0.0"
 mypy = ">=1.19.0,<2.0.0"
 ruff = ">=0.15.5,<0.16.0"
 pre-commit = ">=4.0.0,<5.0.0"
+pip-audit = ">=2.7.0,<3.0.0"
 
 # ---------------------------------------------------------------------------
 # Ruff — linter & formatter
@@ -95,3 +96,39 @@ disallow_untyped_defs = false   # incremental adoption
 module = "tests.*"
 disallow_untyped_defs = false
 disallow_incomplete_defs = false
+
+# ---------------------------------------------------------------------------
+# Coverage — coverage.py configuration
+# ---------------------------------------------------------------------------
+[tool.coverage.run]
+source = ["app"]
+omit = [
+    "tests/*",
+    "*/__pycache__/*",
+    "*/site-packages/*",
+    "*/.venv/*",
+    "__init__.py",
+    "*/conftest.py",
+]
+
+[tool.coverage.report]
+precision = 2
+fail_under = 80
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "def __str__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+    "@abc.abstractmethod",
+    "except ImportError",
+    "except ModuleNotFoundError",
+]
+
+[tool.coverage.html]
+directory = "htmlcov"
+title = "Streamlit Dividend Dashboard - Coverage Report"

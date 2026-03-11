@@ -119,24 +119,23 @@ jobs:
           poetry run pytest tests/ \
             -m "not integration and not slow and not benchmark and not property" \
             --cov=app \
-            --cov-report=xml \
-            --cov-report=html \
-            --cov-report=json \
+            --cov-report= \
             --junitxml=test-results-unit.xml \
             -n auto \
             -v
 
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v7
+      - name: Rename coverage data
+        run: mv .coverage .coverage.unit
+
+      - name: Upload coverage data
+        uses: actions/upload-artifact@v4
         with:
-          name: coverage-unit
-          path: |
-            coverage.xml
-            coverage.json
-            htmlcov/
+          name: coverage-data-unit
+          path: .coverage.unit
+          include-hidden-files: true
 
       - name: Upload test results
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-results-unit
@@ -178,12 +177,23 @@ jobs:
         run: |
           poetry run pytest tests/ \
             -m "integration" \
+            --cov=app \
+            --cov-report= \
             --junitxml=test-results-integration.xml \
-            --no-cov \
             -v
 
+      - name: Rename coverage data
+        run: mv .coverage .coverage.integration
+
+      - name: Upload coverage data
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-data-integration
+          path: .coverage.integration
+          include-hidden-files: true
+
       - name: Upload test results
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-results-integration
@@ -219,9 +229,7 @@ jobs:
             venv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-
 
       - name: Install dependencies
-        run: |
-          poetry install --only dev --no-interaction
-          pip install pip-audit
+        run: poetry install --only dev --no-interaction
 
       - name: Audit dependencies for known vulnerabilities
         run: poetry run pip-audit
@@ -265,12 +273,23 @@ jobs:
         run: |
           poetry run pytest tests/ \
             -m "property" \
+            --cov=app \
+            --cov-report= \
             --junitxml=test-results-property.xml \
-            --no-cov \
             -v
 
+      - name: Rename coverage data
+        run: mv .coverage .coverage.property
+
+      - name: Upload coverage data
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-data-property
+          path: .coverage.property
+          include-hidden-files: true
+
       - name: Upload test results
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-results-property
@@ -318,7 +337,7 @@ jobs:
             -v
 
       - name: Upload test results
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-results-performance
@@ -337,19 +356,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download coverage artifacts
-        uses: actions/download-artifact@v8
+      - name: Download all coverage data
+        uses: actions/download-artifact@v4
         continue-on-error: true
         with:
-          name: coverage-unit
-          path: coverage/
+          pattern: coverage-data-*
+          merge-multiple: true
+          path: .
 
-      - name: Display coverage summary
+      - name: Combine and generate coverage report
         run: |
+          pip install coverage[toml]
+          coverage combine
+          coverage json
+          coverage html
+          coverage xml
           echo "## Coverage Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          if [ -f coverage/coverage.json ]; then
-            COVERAGE=$(python3 -c "import json; data=json.load(open('coverage/coverage.json')); print(data['totals']['percent_covered_display'])")
+          if [ -f coverage.json ]; then
+            COVERAGE=$(python3 -c "import json; data=json.load(open('coverage.json')); print(data['totals']['percent_covered_display'])")
             echo "**Total Coverage: ${COVERAGE}%**" >> $GITHUB_STEP_SUMMARY
           fi
 
@@ -357,7 +382,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report-final
-          path: coverage/
+          path: |
+            coverage.xml
+            coverage.json
+            htmlcov/
           retention-days: 30
 
   # ============================================================================
