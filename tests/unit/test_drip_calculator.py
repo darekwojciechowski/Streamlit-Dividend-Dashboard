@@ -17,7 +17,6 @@ here as they depend on st.* calls.
 
 import pandas as pd
 import pytest
-
 from app.components.drip_calculator import DRIPCalculator
 
 # ============================================================================
@@ -70,17 +69,19 @@ def base_df(calculator: DRIPCalculator) -> pd.DataFrame:
 class TestDRIPDataFrameStructure:
     """Verify output DataFrame has correct shape, columns, and types."""
 
-    EXPECTED_COLUMNS = {
-        "Year",
-        "Shares",
-        "Shares Added",
-        "Share Price",
-        "Annual Dividend",
-        "Total Dividend Income",
-        "Portfolio Value",
-        "Value Without DRIP",
-        "DRIP Benefit",
-    }
+    EXPECTED_COLUMNS: frozenset[str] = frozenset(
+        {
+            "Year",
+            "Shares",
+            "Shares Added",
+            "Share Price",
+            "Annual Dividend",
+            "Total Dividend Income",
+            "Portfolio Value",
+            "Value Without DRIP",
+            "DRIP Benefit",
+        }
+    )
 
     def test_returns_dataframe(self, base_df: pd.DataFrame):
         assert isinstance(base_df, pd.DataFrame)
