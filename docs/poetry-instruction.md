@@ -51,6 +51,20 @@ poetry run streamlit run main.py
 poetry run pytest
 ```
 
+## Step 6: Check test coverage
+
+Run tests with a terminal coverage summary (shows missing lines):
+
+```bash
+poetry run pytest --cov=app --cov-report=term-missing
+```
+
+Generate an HTML report (saved to `htmlcov/index.html`):
+
+```bash
+poetry run pytest --cov=app --cov-report=html
+```
+
 ## Common Poetry commands
 
 | Command | Description |
