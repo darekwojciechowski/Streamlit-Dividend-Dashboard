@@ -110,6 +110,7 @@ omit = [
     "*/.venv/*",
     "__init__.py",
     "*/conftest.py",
+    "app/styles/colors_and_styles.py",
 ]
 
 [tool.coverage.report]

@@ -18,9 +18,12 @@ Test organization:
 
 import pytest
 from app.utils.color_manager import (
+    ColorManager,
     adjust_gradient,
     apply_wcag_ui_standards,
     determine_text_color_for_dropdown,
+    hex_to_rgba,
+    rgb_to_hex,
 )
 
 # ============================================================================
@@ -459,3 +462,169 @@ class TestColorConsistency:
 
         # Assert
         assert result1 == result2 == result3
+
+
+# ============================================================================
+# TESTS: adjust_gradient — uncovered error paths
+# ============================================================================
+
+
+@pytest.mark.unit
+class TestAdjustGradientErrorPaths:
+    """Cover branches in adjust_gradient not hit by standard tests."""
+
+    def test_hex_with_invalid_length_falls_back_to_default(self) -> None:
+        # "#12345" → lstrip → "12345" (5 chars, != 3, != 6) → ValueError at line 31
+        result = adjust_gradient("#12345")
+        assert result == "rgb(200, 200, 200)"
+
+    def test_hex_with_seven_chars_falls_back_to_default(self) -> None:
+        # "#1234567" → lstrip → "1234567" (7 chars) → ValueError at line 31
+        result = adjust_gradient("#1234567")
+        assert result == "rgb(200, 200, 200)"
+
+
+# ============================================================================
+# TESTS: apply_wcag_ui_standards — invalid length path (line 62)
+# ============================================================================
+
+
+@pytest.mark.unit
+class TestWCAGInvalidLengthPath:
+    """Cover the raise-inside-try path for wrong-length hex."""
+
+    def test_five_char_hex_after_strip_defaults_to_light(self) -> None:
+        # "#ABCDE" → lstrip → "ABCDE" (5 chars, != 3, != 6) → raises at line 62 → returns True
+        result = apply_wcag_ui_standards("#ABCDE")
+        assert result is True
+
+    def test_two_char_hex_after_strip_defaults_to_light(self) -> None:
+        result = apply_wcag_ui_standards("#AB")
+        assert result is True
+
+
+# ============================================================================
+# TESTS: hex_to_rgba — uncovered paths (lines 119, 123, 130-131)
+# ============================================================================
+
+
+@pytest.mark.unit
+class TestHexToRgba:
+    """Cover all branches of hex_to_rgba."""
+
+    def test_standard_hex_produces_rgba(self) -> None:
+        result = hex_to_rgba("#FF0000", 0.5)
+        assert result == "rgba(255, 0, 0, 0.5)"
+
+    def test_three_char_shorthand_expands_correctly(self) -> None:
+        # "#fff" → lstrip → "fff" (len==3) → doubled → "ffffff" → covers line 119
+        result = hex_to_rgba("#fff", 1.0)
+        assert result == "rgba(255, 255, 255, 1.0)"
+
+    def test_short_hex_red(self) -> None:
+        # "#f00" → "f00" → "ff0000"
+        result = hex_to_rgba("#f00", 0.8)
+        assert result == "rgba(255, 0, 0, 0.8)"
+
+    def test_invalid_length_defaults_to_purple(self) -> None:
+        # "#ABCDE" → lstrip → "ABCDE" (5 chars, != 3, != 6) → replaced with "8A2BE2" → covers line 123
+        result = hex_to_rgba("#ABCDE", 1.0)
+        assert result == "rgba(138, 43, 226, 1.0)"
+
+    def test_invalid_hex_chars_triggers_valueerror_fallback(self) -> None:
+        # "GGGGGG" → lstrip("#") = "GGGGGG" (6 chars) → int("GG",16) → ValueError → covers lines 130-131
+        result = hex_to_rgba("GGGGGG", 1.0)
+        assert result == "rgba(138, 43, 226, 1.0)"
+
+    def test_alpha_value_preserved(self) -> None:
+        result = hex_to_rgba("#000000", 0.3)
+        assert "0.3" in result
+
+
+# ============================================================================
+# TESTS: rgb_to_hex — error path (lines 149-152)
+# ============================================================================
+
+
+@pytest.mark.unit
+class TestRgbToHexErrorPath:
+    """Cover the except block in rgb_to_hex."""
+
+    def test_malformed_string_returns_black(self) -> None:
+        # "not_valid" → fails strip/split/int parse → covers lines 149-152
+        result = rgb_to_hex("not_valid_color")
+        assert result == "#000000"
+
+    def test_empty_string_returns_black(self) -> None:
+        result = rgb_to_hex("")
+        assert result == "#000000"
+
+    def test_valid_rgb_string_converts_correctly(self) -> None:
+        result = rgb_to_hex("rgb(102, 197, 204)")
+        assert result == "#66C5CC"
+
+
+# ============================================================================
+# TESTS: ColorManager edge cases (lines 184, 188, 201-206)
+# ============================================================================
+
+
+@pytest.mark.unit
+class TestColorManagerGetRandomBaseColor:
+    """Cover exhausted-pool reset and empty-BASE_COLORS paths."""
+
+    def test_returns_hex_color_string(self) -> None:
+        cm = ColorManager()
+        color = cm.get_random_base_color()
+        assert color.startswith("#")
+        assert len(color) == 7
+
+    def test_reset_when_all_colors_exhausted(self) -> None:
+        # Directly set used_colors to simulate all exhausted → triggers line 188 reset
+        from app.styles.colors_and_styles import BASE_COLORS
+
+        cm = ColorManager()
+        cm.used_colors = list(BASE_COLORS)  # mark every color as used
+        # Next call should trigger the reset branch (line 188)
+        color = cm.get_random_base_color()
+        assert color.startswith("#")
+        # After reset + one pick, used_colors should have exactly 1 entry
+        assert len(cm.used_colors) == 1
+
+    def test_empty_base_colors_returns_fallback(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        # Covers line 184: if not BASE_COLORS → return "#636EFA"
+        import app.utils.color_manager as cm_module
+
+        monkeypatch.setattr(cm_module, "BASE_COLORS", [])
+        cm = ColorManager()
+        result = cm.get_random_base_color()
+        assert result == "#636EFA"
+
+
+@pytest.mark.unit
+class TestColorManagerCreateTileHtml:
+    """Cover create_tile_html body and the NaN/zero shares branch."""
+
+    def test_positive_shares_renders_html(self) -> None:
+        # Covers lines 201-204 truthy branch
+        cm = ColorManager()
+        html = cm.create_tile_html("AAPL.US", 100.0)
+        assert "gradient-tile" in html
+        assert "100" in html
+
+    def test_zero_shares_shows_na(self) -> None:
+        # Covers line 204 else branch (shares == 0 → "N/A")
+        cm = ColorManager()
+        html = cm.create_tile_html("AAPL.US", 0.0)
+        assert "N/A" in html
+
+    def test_negative_shares_shows_na(self) -> None:
+        cm = ColorManager()
+        html = cm.create_tile_html("AAPL.US", -5.0)
+        assert "N/A" in html
+
+    def test_nan_shares_shows_na(self) -> None:
+
+        cm = ColorManager()
+        html = cm.create_tile_html("AAPL.US", float("nan"))
+        assert "N/A" in html

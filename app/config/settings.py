@@ -13,7 +13,7 @@ Usage:
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
-from config.app_config import DATA_FILE_PATH
+from app.config.app_config import DATA_FILE_PATH
 
 
 class Settings(BaseSettings):

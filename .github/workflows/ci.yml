@@ -394,9 +394,9 @@ jobs:
       - name: Combine and generate coverage report
         run: |
           poetry run coverage combine
-          poetry run coverage json || true
-          poetry run coverage html || true
-          poetry run coverage xml || true
+          poetry run coverage json
+          poetry run coverage html
+          poetry run coverage xml
           echo "## Coverage Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           if [ -f coverage.json ]; then
