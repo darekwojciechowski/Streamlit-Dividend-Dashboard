@@ -1,15 +1,16 @@
 """Unit tests for the NivoPieChart Nivo.js donut chart component."""
 
+import importlib
 import sys
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 # Patch streamlit_elements before the component module is first imported.
 # The package requires a live Streamlit runtime which is unavailable during unit tests.
 sys.modules["streamlit_elements"] = MagicMock()
 
-import pytest
-
-from app.components.nivo_pie_chart import NivoPieChart
+NivoPieChart = importlib.import_module("app.components.nivo_pie_chart").NivoPieChart
 
 # ---------------------------------------------------------------------------
 # Module-level constants

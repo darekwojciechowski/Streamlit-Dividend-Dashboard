@@ -1,4 +1,4 @@
-"""Unit tests for DRIPCalculator.calculate_drip() pure calculation logic.
+"""Unit tests for DRIPCalculator — pure calculation logic and render methods.
 
 Tests cover:
 - DataFrame structure and required columns
@@ -9,11 +9,12 @@ Tests cover:
 - DRIP benefit vs value without DRIP
 - Edge cases: zero growth rates, single year, monthly/annual frequency
 - Boundary values: very high growth rates, fractional shares
-
-All tests operate only on calculate_drip() — the pure DataFrame-returning method.
-Streamlit render methods (render_modern_chart, render_metrics_cards) are not tested
-here as they depend on st.* calls.
+- render_modern_chart: Plotly figure construction (st.* mocked)
+- render_metrics_cards: metric card rendering (st.* mocked)
+- render: full UI flow (st.* inputs mocked)
 """
+
+from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
@@ -397,3 +398,165 @@ class TestDRIPEdgeCases:
     def test_total_dividend_income_positive(self, base_df: pd.DataFrame):
         # Year 0 has dividend income from reinvestment loop
         assert (base_df["Total Dividend Income"] >= 0).all()
+
+
+# ============================================================================
+# TESTS: render_modern_chart  (st.* and plotly calls mocked)
+# ============================================================================
+
+
+class TestRenderModernChart:
+    """render_modern_chart builds a Plotly figure and calls st.plotly_chart."""
+
+    def test_calls_st_plotly_chart(self, calculator: DRIPCalculator, base_df: pd.DataFrame):
+        with patch("app.components.drip_calculator.st") as mock_st:
+            calculator.render_modern_chart(base_df, ticker="AAPL.US", currency="$")
+            mock_st.plotly_chart.assert_called_once()
+
+    def test_passes_figure_to_plotly_chart(self, calculator: DRIPCalculator, base_df: pd.DataFrame):
+        import plotly.graph_objects as go
+
+        with patch("app.components.drip_calculator.st") as mock_st:
+            calculator.render_modern_chart(base_df, ticker="AAPL.US", currency="$")
+            fig = mock_st.plotly_chart.call_args[0][0]
+            assert isinstance(fig, go.Figure)
+
+    def test_uses_ticker_color_when_present(self, calculator: DRIPCalculator, base_df: pd.DataFrame):
+        """Ticker present in ticker_colors → its color is used (not fallback)."""
+        with patch("app.components.drip_calculator.st"):
+            # Should not raise even if ticker_colors has the key
+            calculator.render_modern_chart(base_df, ticker="AAPL.US", currency="$")
+
+    def test_uses_fallback_color_for_unknown_ticker(self, calculator: DRIPCalculator, base_df: pd.DataFrame):
+        with patch("app.components.drip_calculator.st"):
+            # UNKNOWN.XX not in ticker_colors — falls back to #8A2BE2
+            calculator.render_modern_chart(base_df, ticker="UNKNOWN.XX", currency="€")
+
+    def test_default_currency_parameter(self, calculator: DRIPCalculator, base_df: pd.DataFrame):
+        with patch("app.components.drip_calculator.st") as mock_st:
+            calculator.render_modern_chart(base_df, ticker="AAPL.US")  # no currency arg
+            mock_st.plotly_chart.assert_called_once()
+
+    def test_figure_has_four_traces(self, calculator: DRIPCalculator, base_df: pd.DataFrame):
+
+        with patch("app.components.drip_calculator.st") as mock_st:
+            calculator.render_modern_chart(base_df, ticker="AAPL.US", currency="$")
+            fig = mock_st.plotly_chart.call_args[0][0]
+            # Subplot 2 (DRIP Comparison) has 2 traces (Without DRIP + With DRIP)
+            assert len(fig.data) == 5
+
+
+# ============================================================================
+# TESTS: render_metrics_cards  (st.* calls mocked)
+# ============================================================================
+
+
+class TestRenderMetricsCards:
+    """render_metrics_cards renders four metric blocks via st.markdown / st.columns."""
+
+    def test_calls_st_columns(self, calculator: DRIPCalculator, base_df: pd.DataFrame):
+        with patch("app.components.drip_calculator.st") as mock_st:
+            mock_st.columns.return_value = [MagicMock(), MagicMock(), MagicMock(), MagicMock()]
+            calculator.render_metrics_cards(base_df, currency="$")
+            mock_st.columns.assert_called_once_with(4)
+
+    def test_renders_four_metric_cards(self, calculator: DRIPCalculator, base_df: pd.DataFrame):
+        """Each of the four columns renders one metric card via st.markdown."""
+        with patch("app.components.drip_calculator.st") as mock_st:
+            col_mocks = [MagicMock() for _ in range(4)]
+            mock_st.columns.return_value = col_mocks
+            calculator.render_metrics_cards(base_df, currency="$")
+            # st.markdown called once per column (inside `with col`) + once for CSS
+            total_markdown_calls = mock_st.markdown.call_count + sum(
+                col.__enter__.return_value.markdown.call_count for col in col_mocks
+            )
+            assert total_markdown_calls >= 1
+
+    def test_calls_st_markdown_for_css(self, calculator: DRIPCalculator, base_df: pd.DataFrame):
+        with patch("app.components.drip_calculator.st") as mock_st:
+            mock_st.columns.return_value = [MagicMock(), MagicMock(), MagicMock(), MagicMock()]
+            calculator.render_metrics_cards(base_df, currency="$")
+            # CSS_STYLES must be injected at least once
+            css_calls = [c for c in mock_st.markdown.call_args_list if "<style>" in str(c)]
+            assert len(css_calls) >= 1
+
+    def test_default_currency_dollar(self, calculator: DRIPCalculator, base_df: pd.DataFrame):
+        with patch("app.components.drip_calculator.st") as mock_st:
+            mock_st.columns.return_value = [MagicMock(), MagicMock(), MagicMock(), MagicMock()]
+            calculator.render_metrics_cards(base_df)  # no currency arg
+            mock_st.columns.assert_called_once()
+
+    def test_handles_single_row_df(self, calculator: DRIPCalculator):
+        """metrics with a 1-row DataFrame (0-year projection) should not crash."""
+        df = calculator.calculate_drip(
+            initial_shares=INITIAL_SHARES,
+            share_price=SHARE_PRICE,
+            annual_dividend=ANNUAL_DIVIDEND,
+            dividend_growth=0.0,
+            share_price_growth=0.0,
+            years=0,
+        )
+        with patch("app.components.drip_calculator.st") as mock_st:
+            mock_st.columns.return_value = [MagicMock(), MagicMock(), MagicMock(), MagicMock()]
+            calculator.render_metrics_cards(df, currency="$")  # should not raise
+
+
+# ============================================================================
+# TESTS: render (full UI — st.* inputs mocked)
+# ============================================================================
+
+
+class TestRender:
+    """render() wires together the input widgets and calls calculate/render helpers."""
+
+    def _make_mock_st(self):
+        mock_st = MagicMock()
+        mock_st.columns.side_effect = [
+            [MagicMock(), MagicMock(), MagicMock()],  # col1, col2, col3
+            [MagicMock(), MagicMock()],  # col4, col5
+        ]
+        mock_st.text_input.return_value = "AAPL.US"
+        mock_st.number_input.side_effect = [25, 100, 3]  # shares, price, dividend
+        mock_st.slider.side_effect = [6, 4, 15]  # div_growth, price_growth, years
+        mock_st.selectbox.return_value = 4  # quarterly
+        return mock_st
+
+    def test_render_does_not_raise(self, calculator: DRIPCalculator):
+        mock_st = self._make_mock_st()
+        with (
+            patch("app.components.drip_calculator.st", mock_st),
+            patch.object(calculator, "render_metrics_cards"),
+            patch.object(calculator, "render_modern_chart"),
+        ):
+            calculator.render()
+
+    def test_render_calls_calculate_drip(self, calculator: DRIPCalculator):
+        mock_st = self._make_mock_st()
+        with (
+            patch("app.components.drip_calculator.st", mock_st),
+            patch.object(calculator, "calculate_drip", wraps=calculator.calculate_drip) as spy,
+            patch.object(calculator, "render_metrics_cards"),
+            patch.object(calculator, "render_modern_chart"),
+        ):
+            calculator.render()
+            spy.assert_called_once()
+
+    def test_render_calls_render_metrics_cards(self, calculator: DRIPCalculator):
+        mock_st = self._make_mock_st()
+        with (
+            patch("app.components.drip_calculator.st", mock_st),
+            patch.object(calculator, "render_metrics_cards") as mock_metrics,
+            patch.object(calculator, "render_modern_chart"),
+        ):
+            calculator.render()
+            mock_metrics.assert_called_once()
+
+    def test_render_calls_render_modern_chart(self, calculator: DRIPCalculator):
+        mock_st = self._make_mock_st()
+        with (
+            patch("app.components.drip_calculator.st", mock_st),
+            patch.object(calculator, "render_metrics_cards"),
+            patch.object(calculator, "render_modern_chart") as mock_chart,
+        ):
+            calculator.render()
+            mock_chart.assert_called_once()

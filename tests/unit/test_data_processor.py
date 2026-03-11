@@ -442,3 +442,50 @@ class TestDataIntegrity:
         # Assert
         assert len(processor.df) == 1000
         assert not processor.df.empty
+
+
+@pytest.mark.unit
+class TestMissingCoverageBranches:
+    """Tests targeting specific uncovered branches in data_processor.py."""
+
+    def test_filter_data_missing_ticker_column(self, sample_tsv_file: Path) -> None:
+        """Cover the 'Ticker not in df.columns' guard branch (line 66).
+
+        After loading, manually remove the Ticker column from the internal
+        DataFrame to trigger the guard that returns an empty DataFrame.
+        """
+        processor = DividendDataProcessor(str(sample_tsv_file))
+        processor.df = processor.df.drop(columns=["Ticker"])
+        result = processor.filter_data(["AAPL.US"])
+        assert result.empty
+
+    def test_clean_exception_branch_skips_problematic_column(self, sample_tsv_file: Path) -> None:
+        """Cover the except-continue branch in _clean_dataframe (lines 51-52).
+
+        Directly call _clean_dataframe with a DataFrame whose numeric-conversion
+        step can be patched to raise, exercising the silent-skip path.
+        """
+        from unittest.mock import patch
+
+        processor = DividendDataProcessor(str(sample_tsv_file))
+
+        # Build a fresh copy of the raw data with string columns so cleaners run
+        raw_df = pd.DataFrame(
+            {
+                "Ticker": ["AAPL.US"],
+                "Net Dividend": ["50 USD"],
+                "Tax Collected": ["10%"],
+                "Shares": ["100"],
+            }
+        )
+
+        original_to_numeric = pd.to_numeric
+
+        def patched_to_numeric(series, **kwargs):
+            if getattr(series, "name", None) == "Net Dividend":
+                raise TypeError("simulated conversion error")
+            return original_to_numeric(series, **kwargs)
+
+        with patch("pandas.to_numeric", side_effect=patched_to_numeric):
+            # _clean_dataframe must not re-raise — exception is swallowed
+            processor._clean_dataframe(raw_df)  # should complete without raising
