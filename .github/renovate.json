@@ -1,7 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
-  "schedule": ["every week on monday"],
+  "timezone": "Europe/Warsaw",
+  "schedule": ["* * * * 1"],
   "packageRules": [
     {
       "description": "Python prod deps — group + automerge patch/minor",
