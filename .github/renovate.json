@@ -40,6 +40,12 @@
       "description": "Block automerge for all major updates",
       "matchUpdateTypes": ["major"],
       "automerge": false
+    },
+    {
+      "description": "Ignore pandas major updates — Streamlit does not support pandas v3 yet",
+      "matchPackageNames": ["pandas"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
     }
   ]
 }
