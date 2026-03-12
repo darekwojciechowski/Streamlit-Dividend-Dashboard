@@ -129,14 +129,14 @@ jobs:
         run: mv .coverage .coverage.unit
 
       - name: Upload coverage data
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-data-unit
           path: .coverage.unit
           include-hidden-files: true
 
       - name: Upload test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: test-results-unit
@@ -188,14 +188,14 @@ jobs:
         run: mv .coverage .coverage.integration
 
       - name: Upload coverage data
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-data-integration
           path: .coverage.integration
           include-hidden-files: true
 
       - name: Upload test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: test-results-integration
@@ -285,14 +285,14 @@ jobs:
         run: mv .coverage .coverage.property
 
       - name: Upload coverage data
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-data-property
           path: .coverage.property
           include-hidden-files: true
 
       - name: Upload test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: test-results-property
@@ -341,7 +341,7 @@ jobs:
             -v
 
       - name: Upload test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: test-results-performance
@@ -384,7 +384,7 @@ jobs:
         run: poetry install --with dev --no-interaction
 
       - name: Download all coverage data
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         continue-on-error: true
         with:
           pattern: coverage-data-*
@@ -405,7 +405,7 @@ jobs:
           fi
 
       - name: Upload final coverage report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-report-final
           path: |
