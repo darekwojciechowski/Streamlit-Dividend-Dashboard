@@ -46,6 +46,12 @@
       "matchPackageNames": ["pandas"],
       "matchUpdateTypes": ["major"],
       "enabled": false
+    },
+    {
+      "description": "Pin Python to 3.12 — Streamlit Cloud requires Python 3.12, do not update above it",
+      "matchPackageNames": ["python"],
+      "matchUpdateTypes": ["major", "minor"],
+      "enabled": false
     }
   ]
 }
