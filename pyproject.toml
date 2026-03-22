@@ -47,6 +47,8 @@ mypy = ">=1.19.0,<2.0.0"
 ruff = ">=0.15.5,<0.16.0"
 pre-commit = ">=4.0.0,<5.0.0"
 pip-audit = ">=2.7.0,<3.0.0"
+playwright = ">=1.48.0,<2.0.0"
+pytest-playwright = ">=0.5.0,<1.0.0"
 
 # ---------------------------------------------------------------------------
 # Ruff — linter & formatter
@@ -78,6 +80,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101"]  # allow assert in tests
+"tests/e2e/**" = ["S101", "S310"]  # E2E: urllib.urlopen used for local server health check
 
 [tool.ruff.format]
 quote-style = "double"
