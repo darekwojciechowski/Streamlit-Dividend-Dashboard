@@ -411,7 +411,7 @@ jobs:
           poetry run pytest tests/e2e/ \
             -m "e2e" \
             --screenshot only-on-failure \
-            --tracing on-failure \
+            --tracing retain-on-failure \
             --output test-results-e2e \
             --junitxml=test-results-e2e.xml \
             --timeout=60 \
