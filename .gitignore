@@ -176,3 +176,11 @@ cython_debug/
 
 # Qodo
 .qodo
+
+# GitHub Copilot
+.github/prompts/
+.github/skills/
+
+# Claude Code
+.claude/
+plans/
