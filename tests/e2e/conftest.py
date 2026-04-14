@@ -54,6 +54,6 @@ def dashboard_page(page: Page) -> Page:
         Playwright Page instance ready for testing.
     """
     page.set_default_timeout(15_000)
-    page.goto(_BASE_URL)
-    page.wait_for_load_state("networkidle")
+    page.goto(_BASE_URL, wait_until="domcontentloaded")
+    page.wait_for_selector("[data-testid='stApp']", state="visible")
     return page
