@@ -34,11 +34,30 @@ class GrowthCalculatorSection:
         self._page.get_by_role("option", name=ticker, exact=True).click()
 
     def set_growth_rate(self, pct: int) -> None:
-        """Fill the Annual growth (%) number input with *pct* and commit."""
+        """Fill the Annual growth (%) number input with *pct* and commit.
+
+        Commits the value via Enter (Streamlit's explicit commit key for
+        number_input), then waits for the resulting server rerun to finish
+        so downstream metric reads don't see stale DOM.
+        """
         field = self._page.get_by_label("Annual growth (%)")
         field.click(click_count=3)
         field.fill(str(pct))
-        field.press("Tab")
+        field.press("Enter")
+        self._wait_streamlit_idle()
+
+    def _wait_streamlit_idle(self, timeout: int = 15_000) -> None:
+        """Wait for a Streamlit rerun cycle to fully complete.
+
+        A short initial delay lets Streamlit mount the status widget before
+        we poll for its detachment — otherwise ``count()`` can return 0 while
+        the rerun is still in flight, letting callers read stale metrics.
+        """
+        self._page.wait_for_timeout(250)
+        self._page.wait_for_selector("[data-testid='stSpinner']", state="detached", timeout=timeout)
+        status = self._page.locator("[data-testid='stStatusWidget']")
+        if status.count():
+            status.wait_for(state="detached", timeout=timeout)
 
     # ------------------------------------------------------------------
     # Metric locators
