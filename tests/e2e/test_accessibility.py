@@ -33,7 +33,8 @@ class TestAccessibility:
         be resolved before the suite can pass.
         """
         results = Axe().run(dashboard_page_readonly)
-        critical = [v for v in results.violations if v.get("impact") in ("critical", "serious")]
+        violations = results.response.get("violations", [])
+        critical = [v for v in violations if v.get("impact") in ("critical", "serious")]
         assert not critical, f"Found {len(critical)} critical/serious accessibility violation(s):\n" + "\n".join(
             f"  [{v['impact']}] {v['id']}: {v['description']}" for v in critical
         )

@@ -36,7 +36,7 @@ class GrowthCalculatorSection:
     def set_growth_rate(self, pct: int) -> None:
         """Fill the Annual growth (%) number input with *pct* and commit."""
         field = self._page.get_by_label("Annual growth (%)")
-        field.triple_click()
+        field.click(click_count=3)
         field.fill(str(pct))
         field.press("Tab")
 

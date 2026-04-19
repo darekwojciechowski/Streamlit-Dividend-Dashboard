@@ -56,20 +56,20 @@ class DRIPSection:
     def set_initial_shares(self, shares: int) -> None:
         """Fill Initial Shares with *shares* and commit the value."""
         field = self.initial_shares_input()
-        field.triple_click()
+        field.click(click_count=3)
         field.fill(str(shares))
         field.press("Tab")
 
     def set_share_price(self, price: int) -> None:
         """Fill Current Share Price with *price* and commit the value."""
         field = self.share_price_input()
-        field.triple_click()
+        field.click(click_count=3)
         field.fill(str(price))
         field.press("Tab")
 
     def set_annual_dividend(self, dividend: int) -> None:
         """Fill Annual Dividend/Share with *dividend* and commit the value."""
         field = self.annual_dividend_input()
-        field.triple_click()
+        field.click(click_count=3)
         field.fill(str(dividend))
         field.press("Tab")

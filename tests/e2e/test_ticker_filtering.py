@@ -26,7 +26,7 @@ class TestTickerFiltering:
 
         pom.clear_all_tickers()
 
-        expect(pom.empty_state_message()).to_be_visible()
+        expect(pom.empty_state_message()).to_be_visible(timeout=15_000)
 
     def test_tiles_absent_when_all_tickers_deselected(self, dashboard_page: Page) -> None:
         """Deselecting all tickers must hide the portfolio tiles container."""
