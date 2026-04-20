@@ -303,7 +303,7 @@ class DRIPCalculator:
                 "label": "Total Dividends",
                 "value": f"{currency}{total_dividends:,.0f}",
                 "delta": f"{len(df) - 1} years projected",
-                "gradient": "linear-gradient(135deg, #56ab2f 0%, #a8e063 100%)",
+                "gradient": "linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%)",
             },
         ]
 

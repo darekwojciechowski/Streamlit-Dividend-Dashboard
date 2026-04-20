@@ -1,6 +1,7 @@
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+import streamlit.components.v1 as components
 from app.app_config import (
     COLOR_THEME,
     DATA_FILE_PATH,
@@ -74,6 +75,37 @@ class DividendApp:
         self._render_ticker_selector()
         self._process_data()
         self._render_dashboard()
+        self._patch_unlabeled_buttons()
+
+    def _patch_unlabeled_buttons(self) -> None:
+        """Add aria-labels to Streamlit's icon-only header buttons.
+
+        Streamlit renders its main-menu (hamburger) button without an
+        accessible name, which axe-core flags as a critical violation.
+        st.components.v1.html runs in an iframe that can reach the parent
+        page via window.parent, so we patch the DOM from there.
+        """
+        components.html(
+            """<script>
+            (function () {
+                var doc = window.parent.document;
+                // Streamlit main-menu hamburger button
+                doc.querySelectorAll('[data-testid="baseButton-headerNoPadding"]').forEach(function (b) {
+                    if (!b.getAttribute('aria-label')) b.setAttribute('aria-label', 'Main menu');
+                });
+                // Sidebar collapse/expand button
+                doc.querySelectorAll('[data-testid="collapsedControl"]').forEach(function (b) {
+                    if (!b.getAttribute('aria-label')) b.setAttribute('aria-label', 'Expand sidebar');
+                });
+                // Fallback: any remaining icon-only button with no accessible name
+                doc.querySelectorAll('button').forEach(function (b) {
+                    var hasLabel = b.getAttribute('aria-label') || b.getAttribute('aria-labelledby') || b.getAttribute('title');
+                    if (!hasLabel && !b.textContent.trim()) b.setAttribute('aria-label', 'Button');
+                });
+            })();
+            </script>""",
+            height=0,
+        )
 
     def _render_ticker_selector(self) -> None:
         """Render the multiselect widget for choosing portfolio tickers.
@@ -116,9 +148,9 @@ class DividendApp:
 
         Renders portfolio overview, distribution breakdown, growth
         calculator, and DRIP simulation in sequence. Displays an info
-        message and returns early when `filtered_df` is empty.
+        message and returns early when no tickers are selected.
         """
-        if self.filtered_df.empty:
+        if not self.selected_tickers:
             st.info("Select tickers to view analysis.")
             return
 

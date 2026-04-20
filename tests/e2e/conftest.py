@@ -8,6 +8,7 @@ To run E2E tests:
     pytest tests/e2e/ -m e2e
 """
 
+import contextlib
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -129,5 +130,12 @@ def dashboard_page_readonly(browser: Browser) -> Page:
     page.goto(_BASE_URL, wait_until="domcontentloaded")
     page.wait_for_selector("[data-testid='stApp']", state="visible")
     _wait_streamlit_idle(page)
+    # Wait for the aria-label patch (injected via components.html) to apply.
+    # Ignore if the button doesn't exist in this Streamlit version.
+    with contextlib.suppress(Exception):
+        page.wait_for_selector(
+            '[data-testid="baseButton-headerNoPadding"][aria-label]',
+            timeout=5_000,
+        )
     yield page
     context.close()
