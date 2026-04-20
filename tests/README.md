@@ -32,8 +32,7 @@ tests/
     ├── test_accessibility.py
     ├── test_drip_calculator.py
     ├── test_growth_calculator.py
-    ├── test_responsive.py
-    └── test_ticker_filtering.py
+    └── test_responsive.py
 ```
 
 ## Running Tests

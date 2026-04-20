@@ -180,6 +180,8 @@ cython_debug/
 # GitHub Copilot
 .github/prompts/
 .github/skills/
+.github/hooks/
+.github/copilot-instructions.md
 
 # Claude Code
 .claude/
