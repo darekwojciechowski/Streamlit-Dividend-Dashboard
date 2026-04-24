@@ -1,9 +1,9 @@
-"""E2E tests for the Dividend Growth Calculator section (P0.3).
+"""E2E tests for the Dividend Growth Calculator section.
 
 Verifies the full user journey: select a company, set a growth rate, then
 read the three Growth Summary metrics and assert their mathematical
-relationship (Final = Starting + Total Increase, within floating-point
-rounding of ±0.01).
+relationships (Final ≥ Starting, Final = Starting + Total Increase, higher
+growth rate produces higher final dividend).
 
 Requires the app to be running at http://localhost:8501.
 """
@@ -15,6 +15,8 @@ from tests.e2e.pages.growth_calculator import GrowthCalculatorSection
 
 
 @pytest.mark.e2e
+@pytest.mark.regression
+@pytest.mark.critical
 class TestGrowthCalculator:
     """Verify the Growth Calculator section computes and displays metrics correctly."""
 
@@ -60,3 +62,36 @@ class TestGrowthCalculator:
         assert abs(metrics["final"] - metrics["starting"]) <= 0.01, (
             f"At 0% growth, final ({metrics['final']:.2f}) should equal starting ({metrics['starting']:.2f})."
         )
+
+
+@pytest.mark.e2e
+@pytest.mark.regression
+class TestGrowthCalculatorMonotonicity:
+    """Higher growth rate must never produce a lower final dividend."""
+
+    @pytest.mark.parametrize("growth_rate", [0, 5, 10, 15])
+    def test_final_dividend_increases_with_growth_rate(self, dashboard_page: Page, growth_rate: int) -> None:
+        """Assert Final ≥ Starting for each growth rate in [0, 5, 10, 15]%.
+
+        Pairs with :py:meth:`test_higher_growth_produces_higher_final` to
+        cover both the pointwise and monotonic invariants.
+        """
+        calc = GrowthCalculatorSection(dashboard_page)
+
+        calc.set_growth_rate(growth_rate)
+        metrics = calc.read_metrics()
+
+        assert metrics["final"] >= metrics["starting"] - 0.01, (
+            f"At {growth_rate}% growth, final ({metrics['final']:.2f}) is below starting ({metrics['starting']:.2f})."
+        )
+
+    def test_higher_growth_produces_higher_final(self, dashboard_page: Page) -> None:
+        """Sweeping 0 → 5 → 10 → 15 must produce monotonically increasing final dividends."""
+        calc = GrowthCalculatorSection(dashboard_page)
+
+        finals: list[float] = []
+        for rate in (0, 5, 10, 15):
+            calc.set_growth_rate(rate)
+            finals.append(calc.read_metrics()["final"])
+
+        assert finals == sorted(finals), f"Final dividends are not monotonically increasing with growth rate: {finals}"

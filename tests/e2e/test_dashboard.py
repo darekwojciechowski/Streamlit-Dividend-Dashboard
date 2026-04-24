@@ -12,17 +12,9 @@ Test categories:
 import pytest
 from playwright.sync_api import Page, expect
 
+from tests.e2e.constants import SECTION_HEADINGS
 from tests.e2e.pages.dashboard_page import DashboardPage
 from tests.e2e.pages.drip_section import DRIPSection
-
-SECTION_HEADINGS = [
-    pytest.param("Dividend Analysis Dashboard", id="page_title"),
-    pytest.param("Portfolio Overview", id="portfolio_overview"),
-    pytest.param("Distribution Breakdown", id="distribution_breakdown"),
-    pytest.param("Dividend Growth Calculator", id="growth_calculator"),
-    pytest.param("DRIP Calculator", id="drip_calculator"),
-]
-
 
 # ===========================================================================
 # Smoke tests — page renders the expected sections (class-scoped page)
@@ -30,6 +22,7 @@ SECTION_HEADINGS = [
 
 
 @pytest.mark.e2e
+@pytest.mark.smoke
 class TestDividendDashboardSmoke:
     """Verify all major dashboard sections are visible on page load."""
 
@@ -74,11 +67,12 @@ class TestDividendDashboardInteractions:
 
 
 # ===========================================================================
-# Chart tests — chart elements render (P2.3)
+# Chart tests — chart elements render
 # ===========================================================================
 
 
 @pytest.mark.e2e
+@pytest.mark.charts
 class TestDividendDashboardCharts:
     """Verify Plotly and Nivo chart elements are rendered on the dashboard."""
 

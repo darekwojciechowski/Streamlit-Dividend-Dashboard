@@ -9,15 +9,28 @@ To run E2E tests:
 """
 
 import contextlib
+import os
 import urllib.error
 import urllib.request
+from collections.abc import Iterator
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 import pytest
 from playwright.sync_api import Browser, Page
 
-_BASE_URL = "http://localhost:8501"
+from tests.e2e.constants import (
+    BASE_URL,
+    DEFAULT_TIMEOUT_MS,
+    DESKTOP_1440,
+    IPAD_PRO_USER_AGENT,
+    IPHONE_13_USER_AGENT,
+    MOBILE_IPHONE_13,
+    TABLET_IPAD_PRO,
+)
+from tests.e2e.helpers.streamlit import wait_streamlit_idle
+
 _DATA_FILE = Path("data/dividend_data.csv")
 
 
@@ -34,13 +47,55 @@ def _require_live_server() -> None:
     once per pytest run, adding negligible overhead to unit/integration runs.
     """
     try:
-        urllib.request.urlopen(_BASE_URL, timeout=3)
+        urllib.request.urlopen(BASE_URL, timeout=3)
     except (urllib.error.URLError, OSError):
-        pytest.skip(f"Streamlit server not running at {_BASE_URL}. Start it first with: streamlit run main.py")
+        pytest.skip(f"Streamlit server not running at {BASE_URL}. Start it first with: streamlit run main.py")
 
 
 # ---------------------------------------------------------------------------
-# CSV-driven portfolio tickers fixture (P1.2)
+# Playwright config — pytest-playwright contract fixtures
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture(scope="session")
+def browser_type_launch_args(browser_type_launch_args: dict[str, Any]) -> dict[str, Any]:
+    """Inject launch args so ``HEADED=1`` flips to a visible browser locally.
+
+    Extends the pytest-playwright default so CI still launches headless
+    by default. Slow-motion opt-in via ``PW_SLOWMO_MS=<ms>`` helps when
+    recording demos or debugging flakes.
+    """
+    args = {**browser_type_launch_args}
+    if os.environ.get("HEADED") == "1":
+        args["headless"] = False
+    if slowmo := os.environ.get("PW_SLOWMO_MS"):
+        with contextlib.suppress(ValueError):
+            args["slow_mo"] = int(slowmo)
+    return args
+
+
+@pytest.fixture
+def browser_context_args(browser_context_args: dict[str, Any]) -> dict[str, Any]:
+    """Provide a consistent browser context across the suite.
+
+    Sets a deterministic desktop viewport, locale, and timezone so chart
+    labels, date formatting, and layout measurements stay stable regardless
+    of the developer's machine. Video recording is opt-in via ``PWDEBUG``.
+    """
+    args = {
+        **browser_context_args,
+        "viewport": DESKTOP_1440,
+        "locale": "en-US",
+        "timezone_id": "UTC",
+        "ignore_https_errors": True,
+    }
+    if os.environ.get("PWDEBUG"):
+        args["record_video_dir"] = "test-results-e2e/video"
+    return args
+
+
+# ---------------------------------------------------------------------------
+# CSV-driven portfolio tickers fixture
 # ---------------------------------------------------------------------------
 
 
@@ -57,28 +112,6 @@ def portfolio_tickers() -> list[str]:
 
 
 # ---------------------------------------------------------------------------
-# Streamlit idle helper (P1.3)
-# ---------------------------------------------------------------------------
-
-
-def _wait_streamlit_idle(page: Page, timeout: int = 10_000) -> None:
-    """Wait until Streamlit finishes rendering and all spinners have detached.
-
-    Waits for the absence of the loading spinner and, if a status widget
-    is present, waits for it to detach as well. Both waits succeed
-    immediately when the elements are already absent.
-
-    Args:
-        page: Playwright Page instance.
-        timeout: Maximum wait time in milliseconds.
-    """
-    page.wait_for_selector("[data-testid='stSpinner']", state="detached", timeout=timeout)
-    status = page.locator("[data-testid='stStatusWidget']")
-    if status.count():
-        status.wait_for(state="detached", timeout=timeout)
-
-
-# ---------------------------------------------------------------------------
 # Function-scoped page fixture — mutating tests
 # ---------------------------------------------------------------------------
 
@@ -87,9 +120,9 @@ def _wait_streamlit_idle(page: Page, timeout: int = 10_000) -> None:
 def dashboard_page(page: Page) -> Page:
     """Navigate to the dashboard and wait for it to fully render.
 
-    Sets a 15-second default timeout, navigates to the dashboard URL,
-    waits for the Streamlit app root to appear, then waits for all
-    spinners and status widgets to detach before yielding the page.
+    Navigates to the dashboard URL, waits for the Streamlit app root to
+    appear, then waits for all spinners and status widgets to detach before
+    yielding the page.
 
     Args:
         page: Playwright Page instance.
@@ -97,20 +130,20 @@ def dashboard_page(page: Page) -> Page:
     Returns:
         Playwright Page instance ready for testing.
     """
-    page.set_default_timeout(15_000)
-    page.goto(_BASE_URL, wait_until="domcontentloaded")
+    page.set_default_timeout(DEFAULT_TIMEOUT_MS)
+    page.goto(BASE_URL, wait_until="domcontentloaded")
     page.wait_for_selector("[data-testid='stApp']", state="visible")
-    _wait_streamlit_idle(page)
+    wait_streamlit_idle(page)
     return page
 
 
 # ---------------------------------------------------------------------------
-# Class-scoped page fixture — read-only smoke tests (P3.3)
+# Class-scoped page fixture — read-only smoke tests
 # ---------------------------------------------------------------------------
 
 
 @pytest.fixture(scope="class")
-def dashboard_page_readonly(browser: Browser) -> Page:
+def dashboard_page_readonly(browser: Browser) -> Iterator[Page]:
     """Navigate to the dashboard once per test class and share the page.
 
     Suitable for read-only smoke tests that do not mutate UI state.
@@ -118,18 +151,17 @@ def dashboard_page_readonly(browser: Browser) -> Page:
     overhead of a full browser navigation per test.
 
     Args:
-        browser: Playwright Browser instance (class-scoped by default in
-            pytest-playwright when requested at this scope level).
+        browser: Playwright Browser instance.
 
     Yields:
         Playwright Page instance ready for testing.
     """
-    context = browser.new_context()
+    context = browser.new_context(viewport=DESKTOP_1440, locale="en-US", timezone_id="UTC")
     page = context.new_page()
-    page.set_default_timeout(15_000)
-    page.goto(_BASE_URL, wait_until="domcontentloaded")
+    page.set_default_timeout(DEFAULT_TIMEOUT_MS)
+    page.goto(BASE_URL, wait_until="domcontentloaded")
     page.wait_for_selector("[data-testid='stApp']", state="visible")
-    _wait_streamlit_idle(page)
+    wait_streamlit_idle(page)
     # Wait for the aria-label patch (injected via components.html) to apply.
     # Ignore if the button doesn't exist in this Streamlit version.
     with contextlib.suppress(Exception):
@@ -137,5 +169,33 @@ def dashboard_page_readonly(browser: Browser) -> Page:
             '[data-testid="baseButton-headerNoPadding"][aria-label]',
             timeout=5_000,
         )
+    yield page
+    context.close()
+
+
+# ---------------------------------------------------------------------------
+# Parametrized viewport factory — responsive suite
+# ---------------------------------------------------------------------------
+
+
+_VIEWPORT_PROFILES = {
+    "mobile_iphone_13": (MOBILE_IPHONE_13, IPHONE_13_USER_AGENT),
+    "tablet_ipad_pro": (TABLET_IPAD_PRO, IPAD_PRO_USER_AGENT),
+}
+
+
+@pytest.fixture(params=sorted(_VIEWPORT_PROFILES), scope="class")
+def responsive_page(request: pytest.FixtureRequest, browser: Browser) -> Iterator[Page]:
+    """Yield a page rendered at a parametrized device viewport.
+
+    Drives the responsive suite across mobile + tablet profiles without
+    duplicating fixture logic per breakpoint.
+    """
+    viewport, user_agent = _VIEWPORT_PROFILES[request.param]
+    context = browser.new_context(viewport=viewport, user_agent=user_agent, locale="en-US", timezone_id="UTC")
+    page = context.new_page()
+    page.set_default_timeout(DEFAULT_TIMEOUT_MS)
+    page.goto(BASE_URL, wait_until="domcontentloaded")
+    page.wait_for_selector("[data-testid='stApp']", state="visible")
     yield page
     context.close()

@@ -179,7 +179,7 @@ class DividendApp:
             self.color_manager.create_tile_html(row["Ticker"], row["Shares"]) for _, row in aggregated.iterrows()
         )
 
-        st.html(f'<div class="tiles-container">{tiles_html}</div>')
+        st.html(f'<div class="tiles-container" data-testid="portfolio-tiles">{tiles_html}</div>')
 
     def _render_dividend_analysis(self) -> None:
         """Render a Nivo.js donut chart of net dividend distribution.

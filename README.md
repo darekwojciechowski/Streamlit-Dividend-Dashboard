@@ -1,6 +1,9 @@
 # Streamlit Dividend Dashboard
 
 [![CI](https://github.com/darekwojciechowski/Streamlit-Dividend-Dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/darekwojciechowski/Streamlit-Dividend-Dashboard/actions/workflows/ci.yml)
+[![E2E](https://img.shields.io/github/actions/workflow/status/darekwojciechowski/Streamlit-Dividend-Dashboard/ci.yml?branch=main&label=e2e&logo=playwright&style=flat-square)](https://github.com/darekwojciechowski/Streamlit-Dividend-Dashboard/actions/workflows/ci.yml)
+![Playwright](https://img.shields.io/badge/Playwright-1.58-2EAD33?style=flat-square&logo=playwright&logoColor=white)
+![WCAG axe-core](https://img.shields.io/badge/a11y-axe--core-663399?style=flat-square)
 ![Python](https://img.shields.io/badge/Python-3.12+-blue?style=flat-square&logo=python&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.51+-FF4B4B?style=flat-square)
 ![Pandas](https://img.shields.io/badge/Pandas-2.2+-150458?style=flat-square&logo=pandas&logoColor=white)

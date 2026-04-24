@@ -311,7 +311,7 @@ class DRIPCalculator:
             with col:
                 st.markdown(
                     f"""
-                <div class="metric-card" style="background: {metric["gradient"]};">
+                <div class="metric-card" data-testid="drip-metric-card" style="background: {metric["gradient"]};">
                     <div class="metric-label">{metric["label"]}</div>
                     <div class="metric-value">{metric["value"]}</div>
                     <div class="metric-delta">{metric["delta"]}</div>

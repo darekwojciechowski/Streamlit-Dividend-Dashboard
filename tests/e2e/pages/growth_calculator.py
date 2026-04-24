@@ -1,24 +1,13 @@
 """Page Object Model for the Dividend Growth Calculator section."""
 
-import re
+from playwright.sync_api import Locator
 
-from playwright.sync_api import Locator, Page
-
-
-def _parse_currency(text: str) -> float:
-    """Strip currency symbols and parse a numeric value from *text*.
-
-    Handles values like '$5.25', '€10.00', 'PLN 3.14'.
-    """
-    numeric = re.sub(r"[^\d.]", "", text.strip())
-    return float(numeric)
+from tests.e2e.helpers.parsing import parse_currency
+from tests.e2e.pages.base_section import BaseSection
 
 
-class GrowthCalculatorSection:
+class GrowthCalculatorSection(BaseSection):
     """Encapsulates selectors and actions for the Growth Calculator section."""
-
-    def __init__(self, page: Page) -> None:
-        self._page = page
 
     # ------------------------------------------------------------------
     # Actions
@@ -32,6 +21,7 @@ class GrowthCalculatorSection:
         """
         self._page.get_by_label("Select company:").click()
         self._page.get_by_role("option", name=ticker, exact=True).click()
+        self._wait_for_rerun()
 
     def set_growth_rate(self, pct: int) -> None:
         """Fill the Annual growth (%) number input with *pct* and commit.
@@ -44,20 +34,7 @@ class GrowthCalculatorSection:
         field.click(click_count=3)
         field.fill(str(pct))
         field.press("Enter")
-        self._wait_streamlit_idle()
-
-    def _wait_streamlit_idle(self, timeout: int = 15_000) -> None:
-        """Wait for a Streamlit rerun cycle to fully complete.
-
-        A short initial delay lets Streamlit mount the status widget before
-        we poll for its detachment — otherwise ``count()`` can return 0 while
-        the rerun is still in flight, letting callers read stale metrics.
-        """
-        self._page.wait_for_timeout(250)
-        self._page.wait_for_selector("[data-testid='stSpinner']", state="detached", timeout=timeout)
-        status = self._page.locator("[data-testid='stStatusWidget']")
-        if status.count():
-            status.wait_for(state="detached", timeout=timeout)
+        self._wait_for_rerun()
 
     # ------------------------------------------------------------------
     # Metric locators
@@ -89,7 +66,7 @@ class GrowthCalculatorSection:
             as parsed floats.
         """
         return {
-            "starting": _parse_currency(self.starting_dividend_value()),
-            "final": _parse_currency(self.final_dividend_value()),
-            "total_increase": _parse_currency(self.total_increase_value()),
+            "starting": parse_currency(self.starting_dividend_value()),
+            "final": parse_currency(self.final_dividend_value()),
+            "total_increase": parse_currency(self.total_increase_value()),
         }

@@ -1,13 +1,12 @@
 """Page Object Model for the main Dividend Dashboard view."""
 
-from playwright.sync_api import Locator, Page
+from playwright.sync_api import Locator
+
+from tests.e2e.pages.base_section import BaseSection
 
 
-class DashboardPage:
+class DashboardPage(BaseSection):
     """Encapsulates all selectors and actions for the dashboard page."""
-
-    def __init__(self, page: Page) -> None:
-        self._page = page
 
     # ------------------------------------------------------------------
     # Heading / section locators
@@ -31,15 +30,15 @@ class DashboardPage:
 
     def tiles_container(self) -> Locator:
         """Return a locator for the portfolio tiles container element."""
-        return self._page.locator(".tiles-container")
+        return self._page.get_by_test_id("portfolio-tiles")
 
     def ticker_tile(self, ticker: str) -> Locator:
         """Return a locator for a specific ticker tile, scoped to the tiles container.
 
-        Scoping to `.tiles-container` avoids ambiguity when the same ticker
+        Scoping to the tiles container avoids ambiguity when the same ticker
         text appears elsewhere (multiselect tags, calculator selectbox).
         """
-        return self._page.locator(".tiles-container").get_by_text(ticker)
+        return self.tiles_container().get_by_text(ticker)
 
     # ------------------------------------------------------------------
     # Chart locators
