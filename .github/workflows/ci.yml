@@ -233,6 +233,9 @@ jobs:
       - name: Install dependencies
         run: poetry install --only dev --no-interaction
 
+      - name: Upgrade pip to patched version
+        run: poetry run pip install --upgrade pip
+
       - name: Audit dependencies for known vulnerabilities
         run: poetry run pip-audit
 
