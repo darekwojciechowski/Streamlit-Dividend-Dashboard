@@ -412,13 +412,14 @@ jobs:
 
       - name: Run E2E tests (${{ matrix.browser }})
         run: |
+          mkdir -p test-results-e2e-${{ matrix.browser }}/artifacts
           poetry run pytest tests/e2e/ \
             -m "e2e" \
             -p no:xdist \
             --browser ${{ matrix.browser }} \
             --screenshot only-on-failure \
             --tracing retain-on-failure \
-            --output test-results-e2e-${{ matrix.browser }} \
+            --output test-results-e2e-${{ matrix.browser }}/artifacts \
             --junitxml=test-results-e2e-${{ matrix.browser }}.xml \
             --html=test-results-e2e-${{ matrix.browser }}/report.html \
             --self-contained-html \
