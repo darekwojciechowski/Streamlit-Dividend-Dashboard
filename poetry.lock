@@ -114,14 +114,14 @@ files = [
 
 [[package]]
 name = "axe-playwright-python"
-version = "0.1.7"
+version = "0.1.9"
 description = "Automated web accessibility testing using axe-core engine and Playwright."
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
 files = [
-    {file = "axe_playwright_python-0.1.7-py3-none-any.whl", hash = "sha256:8699e904466cc2206fa2fa414b4d59aab68e34ba8449c6d082896ca1950440e2"},
-    {file = "axe_playwright_python-0.1.7.tar.gz", hash = "sha256:f0f3d59061abbaee9990d0309f855210ec8fd6ca5bf076f39210289ac0961258"},
+    {file = "axe_playwright_python-0.1.9-py3-none-any.whl", hash = "sha256:101d3a69fd9e4e064164250aeb375eb31c37a749ff81aff9915c12ac430497ac"},
+    {file = "axe_playwright_python-0.1.9.tar.gz", hash = "sha256:eb5feb0111dd55c69932a61def7029aa84e414af6245f84165b2d349bd1184c1"},
 ]
 
 [package.dependencies]
